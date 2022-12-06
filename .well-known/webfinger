@@ -1,0 +1,23 @@
+{
+  "subject": "acct:agrmohit@mastodon.online",
+  "aliases": [
+    "https://mastodon.online/@agrmohit",
+    "https://mastodon.online/users/agrmohit"
+  ],
+  "links": [
+    {
+      "rel": "http://webfinger.net/rel/profile-page",
+      "type": "text/html",
+      "href": "https://mastodon.online/@agrmohit"
+    },
+    {
+      "rel": "self",
+      "type": "application/activity+json",
+      "href": "https://mastodon.online/users/agrmohit"
+    },
+    {
+      "rel": "http://ostatus.org/schema/1.0/subscribe",
+      "template": "https://mastodon.online/authorize_interaction?uri={uri}"
+    }
+  ]
+}
