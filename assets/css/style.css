@@ -129,10 +129,13 @@ h2 {
 h1:hover,
 h2:hover {
   text-decoration: underline wavy var(--text-secondary) 2px;
+  transition: text-decoration 0.75s ease-out;
 }
 
 .anchor-link {
   visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
 }
 
 .anchor-link:hover {
@@ -143,6 +146,7 @@ h1:hover .anchor-link,
 h2:hover .anchor-link,
 h3:hover .anchor-link {
   visibility: visible;
+  opacity: 1;
 }
 
 hr {
@@ -228,7 +232,7 @@ a {
 }
 
 a:hover {
-  text-decoration: underline;
+  text-decoration: underline wavy;
 }
 
 small {
@@ -278,8 +282,8 @@ main {
   :root {
     --background-primary: #f9fffa;
     --text-primary: #000000;
-    --text-secondary: #5a5a5a;
-    --text-strong: #ffffff;
+    --text-secondary: #575757;
+    --text-strong: rgb(35, 35, 35);
     --text-accent: #049d67;
     --text-quote: #bbf7d0;
     --line-height: 1.25rem;
