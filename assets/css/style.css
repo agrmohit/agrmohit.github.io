@@ -7,7 +7,7 @@
 :root {
   --background-primary: #0a0a0a;
   --text-primary: #e5e5e5;
-  --text-secondary: #737373;
+  --text-secondary: #9b9b9b;
   --text-strong: #ffffff;
   --text-accent: #60a5fa;
   --text-quote: #aec1d5;
@@ -124,6 +124,25 @@ h1 {
 
 h2 {
   font-size: 1.1rem;
+}
+
+h1:hover,
+h2:hover {
+  text-decoration: underline wavy var(--text-secondary) 2px;
+}
+
+.anchor-link {
+  visibility: hidden;
+}
+
+.anchor-link:hover {
+  text-decoration: none;
+}
+
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link {
+  visibility: visible;
 }
 
 hr {
@@ -251,6 +270,10 @@ main {
   margin-block-start: 1.1rem;
 }
 
+.emoji-xl {
+  font-size: 2rem;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     --background-primary: #f9fffa;
@@ -273,5 +296,43 @@ main {
 @media print {
   nav {
     display: none;
+  }
+}
+
+.emoji-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+}
+
+p:hover .emoji-wave {
+  animation-name: wave-animation;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes wave-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(14deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(14deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
   }
 }
