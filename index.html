@@ -29,7 +29,10 @@
         font-family: JetBrains Mono;
         font-style: normal;
         font-weight: 400;
-        src: url(/assets/webfonts/JetBrainsMono-Regular.woff2);
+        src: local("JetBrains Mono"), local("JetBrains Mono NL"),
+          url(/assets/webfonts/JetBrainsMono-Regular.woff2) format("woff2"),
+          url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
+        font-display: swap;
       }
     </style>
     <link rel="stylesheet" href="/assets/css/style.css" />
