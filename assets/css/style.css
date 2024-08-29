@@ -10,7 +10,7 @@
   --text-secondary: #737373;
   --text-strong: #ffffff;
   --text-accent: #60a5fa;
-  --text-quote: #bbf7d0;
+  --text-quote: #aec1d5;
   --line-height: 1.25rem;
 }
 
@@ -18,7 +18,7 @@ html {
   background: var(--background-primary);
   color: var(--text-primary);
   color-scheme: dark;
-  font-size: 14px;
+  font-size: 16px;
   line-height: var(--line-height);
 }
 
@@ -118,6 +118,14 @@ h6::before {
   content: "###### " / "";
 }
 
+h1 {
+  font-size: 1.25rem;
+}
+
+h2 {
+  font-size: 1.1rem;
+}
+
 hr {
   color: var(--text-secondary);
   text-align: center;
@@ -135,6 +143,7 @@ ul {
   margin: var(--line-height) 0;
   padding-inline-start: 2ch;
 }
+
 ul li::marker {
   font-weight: bold;
   color: var(--text-secondary);
@@ -240,4 +249,29 @@ nav span::after {
 
 main {
   margin-block-start: 1.1rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background-primary: #f9fffa;
+    --text-primary: #000000;
+    --text-secondary: #5a5a5a;
+    --text-strong: #ffffff;
+    --text-accent: #049d67;
+    --text-quote: #bbf7d0;
+    --line-height: 1.25rem;
+  }
+}
+
+@media (max-width: 400px) {
+  nav {
+    gap: 0.5ch;
+    flex-direction: column;
+  }
+}
+
+@media print {
+  nav {
+    display: none;
+  }
 }
