@@ -340,3 +340,22 @@ p:hover .emoji-wave {
     transform: rotate(0deg);
   }
 }
+
+.emoji-rotate {
+  display: inline-block;
+}
+
+span:hover .emoji-rotate {
+  animation-name: spin-animation;
+  animation-duration: 3s;
+  animation-iteration-count: 1;
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
