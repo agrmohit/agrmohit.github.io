@@ -15,7 +15,7 @@ async function GitHubStars() {
     }
 
     if (stars) {
-      h3.innerHTML = h3.innerHTML.trim().replace("<a", ` ${stars}⭐<a`);
+      h3.innerHTML = h3.innerHTML.trim().replace("<a", ` <span title="${stars} GitHub stars">(${stars}⭐)</span><a`);
     }
   }
 
