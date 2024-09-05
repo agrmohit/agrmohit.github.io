@@ -42,6 +42,10 @@
           url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
         font-display: swap;
       }
+      /* Putting it in css may cause layout shift in slow networks */
+      html {
+        min-width: 380px;
+      }
     </style>
     <link rel="stylesheet" href="/assets/css/style.css" />
 
