@@ -1,6 +1,6 @@
 // import "./css-global-variables.min.js";
 // Commented since it is currently imported in html globally
-const cssVar = CSSGlobalVariables();
+const cssVar = new CSSGlobalVariables();
 
 // Theme 'undefined' is 'auto'
 const themeList = ["auto", "light", "dark"];
