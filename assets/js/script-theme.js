@@ -48,10 +48,10 @@ function applyTheme(nextTheme) {
     case "light":
       cssVar["--background-primary"] = "#f9fffa";
       cssVar["--text-primary"] = "#000000";
-      cssVar["--text-secondary"] = "#575757";
-      cssVar["--text-strong"] = "#232323";
+      cssVar["--text-secondary"] = "#6c6f85";
+      cssVar["--text-strong"] = "#353745";
       cssVar["--text-accent"] = "#049d67";
-      cssVar["--text-quote"] = "#bbf7d0";
+      cssVar["--text-quote"] = "#dd7878";
       cssVar["--line-height"] = "1.25rem";
       break;
 

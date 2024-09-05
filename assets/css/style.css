@@ -282,10 +282,10 @@ main {
   :root {
     --background-primary: #f9fffa;
     --text-primary: #000000;
-    --text-secondary: #575757;
-    --text-strong: #232323;
+    --text-secondary: #6c6f85;
+    --text-strong: #353745;
     --text-accent: #049d67;
-    --text-quote: #bbf7d0;
+    --text-quote: #dd7878;
     --line-height: 1.25rem;
   }
 }
