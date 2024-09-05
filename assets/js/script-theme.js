@@ -3,7 +3,7 @@
 const cssVar = new CSSGlobalVariables();
 
 // Theme 'undefined' is 'auto'
-const themeList = ["auto", "light", "dark"];
+const themeList = ["auto", "light", "dark", "catpuccin-frappe"];
 
 function getCurrentTheme() {
   const themeName = localStorage.getItem("theme");
@@ -62,6 +62,16 @@ function applyTheme(nextTheme) {
       cssVar["--text-strong"] = "#ffffff";
       cssVar["--text-accent"] = "#60a5fa";
       cssVar["--text-quote"] = "#aec1d5";
+      cssVar["--line-height"] = "1.25rem";
+      break;
+
+    case "catpuccin-frappe":
+      cssVar["--background-primary"] = "#303446";
+      cssVar["--text-primary"] = "#c6d0f5";
+      cssVar["--text-secondary"] = "#babbf1";
+      cssVar["--text-strong"] = "#f2d5cf";
+      cssVar["--text-accent"] = "#8caaee";
+      cssVar["--text-quote"] = "#99d1db";
       cssVar["--line-height"] = "1.25rem";
       break;
 
