@@ -5,12 +5,12 @@
 }
 
 :root {
-  --background-primary: #0a0a0a;
-  --text-primary: #e5e5e5;
-  --text-secondary: #9b9b9b;
-  --text-strong: #ffffff;
-  --text-accent: #60a5fa;
-  --text-quote: #aec1d5;
+  --background-primary: #303446;
+  --text-primary: #c6d0f5;
+  --text-secondary: #babbf1;
+  --text-strong: #f2d5cf;
+  --text-accent: #8caaee;
+  --text-quote: #99d1db;
   --line-height: 1.25rem;
 }
 

@@ -3,7 +3,7 @@
 const cssVar = new CSSGlobalVariables();
 
 // Theme 'undefined' is 'auto'
-const themeList = ["auto", "light", "dark", "catpuccin-frappe"];
+const themeList = ["auto", "light", "catpuccin-frappe", "night"];
 
 function getCurrentTheme() {
   const themeName = localStorage.getItem("theme");
@@ -55,7 +55,7 @@ function applyTheme(nextTheme) {
       cssVar["--line-height"] = "1.25rem";
       break;
 
-    case "dark":
+    case "night":
       cssVar["--background-primary"] = "#0a0a0a";
       cssVar["--text-primary"] = "#e5e5e5";
       cssVar["--text-secondary"] = "#9b9b9b";
