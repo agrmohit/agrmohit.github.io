@@ -20,7 +20,7 @@ function createThemeToggleElement() {
   const currentTheme = getCurrentTheme();
   const nextTheme = themeList[(themeList.indexOf(currentTheme) + 1) % themeList.length];
 
-  themeToggleElement.innerHTML = `<a href="#" id="theme-toggle" title="Current theme: ${currentTheme}" data-umami-event="toggle-theme" data-umami-event-old-theme="${currentTheme}">${nextTheme} theme</a>`;
+  themeToggleElement.innerHTML = `<a href="#" id="theme-toggle" title="Current theme: ${currentTheme}" data-umami-event="toggle-theme" data-umami-event-old-theme="${currentTheme}">${nextTheme}\u202ftheme</a>`;
 
   themeToggleElement.addEventListener("click", handleThemeToggle);
   navElement.appendChild(themeToggleElement);
@@ -74,7 +74,7 @@ function applyTheme(nextTheme) {
   const themeToggleElement = document.querySelector("#theme-toggle");
   themeToggleElement.title = `Current theme: ${nextTheme}`;
   const nextThemeOnClick = themeList[(themeList.indexOf(nextTheme) + 1) % themeList.length];
-  themeToggleElement.innerText = `${nextThemeOnClick.charAt(0).toUpperCase() + nextThemeOnClick.slice(1)} theme`;
+  themeToggleElement.innerText = `${nextThemeOnClick.charAt(0).toUpperCase() + nextThemeOnClick.slice(1)}\u202ftheme`;
 }
 
 function main() {
