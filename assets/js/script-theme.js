@@ -20,7 +20,7 @@ function createThemeToggleElement() {
   const currentTheme = getCurrentTheme();
   const nextTheme = themeList[(themeList.indexOf(currentTheme) + 1) % themeList.length];
 
-  themeToggleElement.innerHTML = `<a href="#" id="theme-toggle" title="Current theme: ${currentTheme}" data-umami-event="toggle-theme" data-umami-event-old-theme="${currentTheme}">${nextTheme}\u202ftheme</a>`;
+  themeToggleElement.innerHTML = `<a href="#" id="theme-toggle" title="Current theme: ${currentTheme}">${nextTheme}\u202ftheme</a>`;
 
   themeToggleElement.addEventListener("click", handleThemeToggle);
   navElement.appendChild(themeToggleElement);
@@ -30,6 +30,7 @@ function handleThemeToggle() {
   const currentTheme = getCurrentTheme();
   const nextTheme = themeList[(themeList.indexOf(currentTheme) + 1) % themeList.length];
   applyTheme(nextTheme);
+  umami.track("toggle-theme", { "old-theme": currentTheme, "new-theme": nextTheme });
 }
 
 function applyTheme(nextTheme) {
