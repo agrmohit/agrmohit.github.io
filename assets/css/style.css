@@ -314,6 +314,10 @@ p:hover .emoji-wave {
   animation-iteration-count: infinite;
 }
 
+.explanation {
+  text-decoration: underline dotted;
+}
+
 @keyframes wave-animation {
   0% {
     transform: rotate(0deg);
