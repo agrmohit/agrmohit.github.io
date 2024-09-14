@@ -60,10 +60,10 @@
       data-website-id="1f3a44cf-e368-43da-93fe-4d94a6f5867f"
       data-host-url="https://analytics.agrmohit.com"
     ></script>
-    <!-- Opt-out of tracking -->
-    <!-- <script>
-      localStorage.setItem("umami.disabled", "1");
-    </script> -->
+    <!-- Opt-out of tracking on non-canonical url -->
+    <script>
+      if (window.location.hostname !== "agrmohit.com") localStorage.setItem("umami.disabled", "1");
+    </script>
 
     <!-- Structured Data (schema.org) -->
     <script type="application/ld+json">
