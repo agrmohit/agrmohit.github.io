@@ -176,7 +176,7 @@ ol {
   padding-inline-start: 3ch;
 }
 
-li[role="article"] + li[role="article"] {
+.github-project + .github-project {
   margin-top: var(--line-height);
 }
 
