@@ -67,11 +67,11 @@ function applyTheme(nextTheme) {
       break;
 
     case "dark":
-      cssVar["--background-primary"] = "#303446";
-      cssVar["--text-primary"] = "#c6d0f5";
-      cssVar["--text-secondary"] = "#babbf1";
-      cssVar["--text-strong"] = "#f2d5cf";
-      cssVar["--text-accent"] = "#8caaee";
+      cssVar["--background-primary"] = "#1a1a1a";
+      cssVar["--text-primary"] = "#e0e4ef";
+      cssVar["--text-secondary"] = "#ffffff";
+      cssVar["--text-strong"] = "#efbcb2";
+      cssVar["--text-accent"] = "#99d1db";
       cssVar["--text-quote"] = "#99d1db";
       cssVar["--line-height"] = "1.25rem";
       break;
