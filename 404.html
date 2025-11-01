@@ -267,6 +267,18 @@
               resetForm(null, "Because Cat");
               break;
 
+            case ["hi", "hello", "meow"].some((term) => input.value.toLowerCase().includes(term)):
+              const meowResponses = [
+                "And?",
+                "Is that supposed to mean something?",
+                "*stares*",
+                "*ignores you and continues grooming*",
+                "*tail twitches*",
+              ];
+              const randomMeow = meowResponses[Math.floor(Math.random() * meowResponses.length)];
+              resetForm(null, randomMeow);
+              break;
+
             case ["ls", "dir"].some((term) => input.value.toLowerCase().includes(term)):
               const fileList = [
                 "dr-x------   3   .nap_spot",
