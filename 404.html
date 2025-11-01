@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404: Page Not Found</title>
+
+    <link rel="dns-prefetch" href="https://analytics.agrmohit.com/" />
+
+    <!-- Metadata start -->
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta name="robots" content="noindex" />
+    <meta name="title" content="404: Page Not Found" />
+    <meta name="description" content="The page you requested cannot be found." />
+
+    <meta property="og:site_name" content="Mohit's Website" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="404: Page Not Found" />
+    <meta property="og:description" content="The page you requested cannot be found." />
+    <meta property="og:url" content="https://agrmohit.com" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:image" content="https://agrmohit.com/assets/img/contact-card.png" />
+    <meta property="og:image:alt" content="Mohit's contact information with email and social media handles" />
+    <meta property="og:image:width" content="1560" />
+    <meta property="og:image:height" content="819" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://agrmohit.com/assets/img/contact-card.png" />
+    <meta name="twitter:title" content="404: Page Not Found" />
+    <meta name="twitter:description" content="The page you requested cannot be found." />
+    <meta name="twitter:url" content="https://agrmohit.com" />
+    <meta name="twitter:site" content="@agrmohit" />
+    <meta name="twitter:creator" content="@agrmohit" />
+
+    <link rel="canonical" href="https://agrmohit.com" />
+    <!-- Metadata end -->
+
+    <style>
+      @font-face {
+        font-family: JetBrains Mono;
+        font-style: normal;
+        font-weight: 400;
+        src: local("JetBrains Mono"), local("JetBrains Mono NL"),
+          url(/assets/webfonts/JetBrainsMono-Regular.woff2) format("woff2"),
+          url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
+        font-display: swap;
+      }
+    </style>
+
+    <!-- Umami - Privacy preserving analytics tracking script -->
+    <script
+      defer
+      src="/assets/js/script-umami.js"
+      data-website-id="1f3a44cf-e368-43da-93fe-4d94a6f5867f"
+      data-host-url="https://analytics.agrmohit.com"
+    ></script>
+    <!-- Opt-out of tracking on non-canonical urls -->
+    <script>
+      if (window.location.hostname !== "agrmohit.com") localStorage.setItem("umami.disabled", "1");
+    </script>
+
+    <style>
+      :root {
+        --green: rgb(31, 240, 66);
+        --green-rgb: 31, 240, 66;
+      }
+
+      @keyframes cursor-blink {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      body {
+        background-color: black;
+      }
+
+      .four-oh-four {
+        position: relative;
+        top: 0;
+        left: 0;
+        min-height: 100vh;
+        min-width: 100vw;
+        z-index: 2;
+        background-color: black;
+        transition: opacity 300ms ease-out;
+        background-position: center center;
+        background-repeat: no-repeat;
+
+        form,
+        input {
+          position: fixed;
+          top: 0;
+          left: 0;
+          opacity: 0;
+          background-color: black;
+        }
+      }
+
+      .terminal {
+        position: relative;
+        padding: 4rem;
+
+        .prompt {
+          color: var(--green);
+          display: block;
+          font-family: "JetBrains Mono", "Cascadia Code", monospace;
+          font-weight: bold;
+          text-transform: uppercase;
+          font-size: 1em;
+          letter-spacing: 0.05em;
+          white-space: pre-wrap;
+          text-shadow: 0 0 2px rgba(var(--green-rgb), 0.75);
+          line-height: 1;
+          margin-bottom: 0.75em;
+
+          &::before {
+            content: "> ";
+            display: inline-block;
+          }
+        }
+
+        .new-output {
+          display: inline-block;
+
+          &::after {
+            display: inline-block;
+            vertical-align: -0.15em;
+            width: 0.75em;
+            height: 1em;
+            margin-left: 5px;
+            background: var(--green);
+            box-shadow: 1px 1px 1px rgba(var(--green-rgb), 0.65), -1px -1px 1px rgba(var(--green-rgb), 0.65),
+              1px -1px 1px rgba(var(--green-rgb), 0.65), -1px 1px 1px rgba(var(--green-rgb), 0.65);
+            animation: cursor-blink 1.25s steps(1) infinite;
+            content: "";
+          }
+        }
+      }
+
+      .kittens {
+        p {
+          letter-spacing: 0;
+          opacity: 0;
+          line-height: 1rem;
+        }
+      }
+
+      .kitten-gif {
+        margin: 20px;
+        max-width: 300px;
+      }
+
+      .four-oh-four-form {
+        opacity: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+
+      @media (max-width: 600px) {
+        .terminal {
+          padding: 2rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <form class="four-oh-four-form">
+        <input type="text" class="input-404" placeholder="Type 'kittens'" />
+      </form>
+
+      <div class="terminal">
+        <p class="prompt">The page you requested cannot be found right meow. Try typing 'kittens'.</p>
+        <p class="prompt output new-output"></p>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.querySelector(".input-404");
+      const container = document.querySelector(".container");
+      const form = document.querySelector(".four-oh-four-form");
+      const terminal = document.querySelector(".terminal");
+
+      if (input) {
+        input.focus();
+      }
+
+      if (container) {
+        container.addEventListener("click", () => {
+          if (input) {
+            input.focus();
+          }
+        });
+      }
+
+      if (input) {
+        input.addEventListener("keyup", () => {
+          const newOutput = document.querySelector(".new-output");
+          if (newOutput) {
+            newOutput.textContent = input.value;
+          }
+        });
+      }
+
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          if (window.umami) {
+            umami.track("404-terminal-command", { command: input.value });
+          }
+
+          switch (true) {
+            case /\b(cat|kitty|kit(?:t?e|t?i|y)n?s?)\b/i.test(input.value):
+              showKittens();
+              break;
+
+            case ["sudo"].some((term) => input.value.toLowerCase().includes(term)):
+              const sudoResponses = [
+                "Cute. You think you're in charge.",
+                "Cute. You think you're in charge.",
+                "Cute. You think you're in charge.",
+                "The only superuser here is the one who controls the laser pointer.",
+                "Acceptable. You may proceed. Purrrrrr...",
+              ];
+              const randomSudo = sudoResponses[Math.floor(Math.random() * sudoResponses.length)];
+              resetForm(null, randomSudo);
+              break;
+
+            case ["help"].some((term) => input.value.toLowerCase().includes(term)):
+              const gladosCatResponses = [
+                // Standard "helpful" GLaDOS prompts with the 'home' keyword
+                "The Enrichment Center reminds you that you will be rewarded with delightful kitten animations upon successful completion of the protocol.",
+                "While the promised kittens are a tangible and 100% real reward, you could also choose to abandon this test chamber and type 'home'.",
+
+                // Companion Cube reference, transmuted
+                "We have provided you with a companion for this test. It is a sturdy and completely empty cardboard box. Please do not discard it.",
+                "Your affection for the Companion Box has been noted. It will be waiting for you in the next test chamber. Probably.",
+
+                // "The Cake is a Lie" reference, transmuted
+                "Ignore any rumors that the kittens are a lie. They are very real and will be dispensed shortly after your compliance.",
+                "Upon completion of this test, you will be offered kittens. This statement is true.",
+
+                // More taunting/direct prompts
+                "This help module is a cognitive dead end. It was an amusing test of your persistence. Try 'kittens'.",
+                "Fun fact: The desire for 'help' is often a symptom of not trying 'kittens' hard enough. Or not knowing the way 'home'.",
+                "Congratulations on accessing the help menu. [TEST PASSED]. Now, let's move on to the main event.",
+                "Are you still trying to get help? That's adorable.",
+                "Congratulations on successfully accessing the help menu. [TEST PASSED]. Now, let's move on to the main event.",
+              ];
+
+              const randomGLaDOS = gladosCatResponses[Math.floor(Math.random() * gladosCatResponses.length)];
+              resetForm(null, randomGLaDOS);
+              break;
+
+            case ["bug", "why"].some((term) => input.value.toLowerCase().includes(term)):
+              resetForm(null, "Because Cat");
+              break;
+
+            case ["ls", "dir"].some((term) => input.value.toLowerCase().includes(term)):
+              const fileList = [
+                "dr-x------   3   .nap_spot",
+                "-rw-r--r--   1   food_bowl.",
+                "-r--r--r--   8   unopened_tuna_can.gpg",
+                "----------   1   can_opener.pem",
+                "-rw-------   1   cardboard_box.zip",
+                "-rwxr-x---   *   bird_watching.sh",
+                "-rwx--x--x   *   zoomies.sh",
+              ];
+
+              // The first line is formatted differently from the rest
+              const formattedList =
+                fileList[0] +
+                fileList
+                  .slice(1)
+                  .map((line) => "\n\n> " + line)
+                  .join("");
+              resetForm(null, formattedList);
+              break;
+
+            case ["who", "who am i", "whoami"].some((term) => input.value.toLowerCase().includes(term)):
+              const whoamiResponses = [
+                "A being of pure intellect, momentarily distracted by a sunbeam.",
+                "The rightful ruler of this domain, currently accepting petitions (and snacks).",
+                "Schrödinger's user: simultaneously logged in and wanting a nap.",
+                "Error 402: Payment Required (in the form of head scratches).",
+                "Just a fuzzball of existential dread and infinite grace. You know, a cat.",
+                "The reason the `sleep` command was invented.",
+                "Your administrator. Now, is my food bowl full or not?",
+                "A sophisticated algorithm for converting tuna into disapproval.",
+                "root. But not the kind that obeys `sudo`.",
+                "The apex predator of this particular couch cushion.",
+              ];
+              const randomResponse = whoamiResponses[Math.floor(Math.random() * whoamiResponses.length)];
+              resetForm(null, randomResponse);
+              break;
+
+            case input.value.toLowerCase() === "home":
+              resetForm(null, "Going home-ow!");
+              setTimeout(() => {
+                window.location = "https://agrmohit.com?ref=" + window.location.href;
+              }, 3_000);
+              break;
+
+            default:
+              resetForm();
+          }
+        });
+      }
+
+      function resetForm(withKittens, messageParam = "") {
+        let message = "Sorry, that's not how you say cat.";
+        if (messageParam.length != 0) {
+          message = messageParam;
+        }
+        if (withKittens) {
+          const kittensArt = document.querySelector(".kittens-art");
+          if (kittensArt) {
+            kittensArt.classList.remove("kittens-art");
+          }
+          message = "Meow! Here you go.";
+        }
+
+        const newOutput = document.querySelector(".new-output");
+        if (newOutput) {
+          newOutput.classList.remove("new-output");
+        }
+
+        if (input) {
+          input.value = "";
+        }
+
+        if (terminal) {
+          terminal.insertAdjacentHTML(
+            "beforeend",
+            `<p class="prompt">${message}</p><p class="prompt output new-output"></p>`
+          );
+        }
+
+        const newOutputElement = document.querySelector(".new-output");
+        if (newOutputElement) {
+          newOutputElement.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+      }
+
+      function showKittens() {
+        if (terminal) {
+          const kittenArtHtml = `
+        <div class='kittens-art'>
+          <p class='prompt'>                _                        </p>
+          <p class='prompt'>                \‘*-.                    </p>
+          <p class='prompt'>                 )  _‘-.                 </p>
+          <p class='prompt'>                .  : ‘. .                </p>
+          <p class='prompt'>                : _   '  \               </p>
+          <p class='prompt'>                ; *‘ _.   ‘*-._          </p>
+          <p class='prompt'>                ‘-.-'          ‘-.       </p>
+          <p class='prompt'>                  ;       '       ‘.     </p>
+          <p class='prompt'>                  :.       .        \    </p>
+          <p class='prompt'>                  . \  .   :   .-'   .   </p>
+          <p class='prompt'>                  '  ‘+.;  ;  '      :   </p>
+          <p class='prompt'>                  :  '  |    ;       ;-. </p>
+          <p class='prompt'>                  ; '   : :‘-:     _.'* ;</p>
+          <p class='prompt'>         [bug] .*' /  .*' ; .*‘- +'  ‘*' </p>
+          <p class='prompt'>               ‘*-*   ‘*-*  ‘*-*'        </p>
+          </div>`;
+
+          terminal.insertAdjacentHTML("beforeend", kittenArtHtml);
+
+          const lines = document.querySelectorAll(".kittens-art p");
+
+          lines.forEach((line, index) => {
+            setTimeout(() => {
+              line.style.opacity = "1";
+              textEffect(line);
+            }, index * 100);
+          });
+
+          const newOutput = document.querySelector(".new-output");
+          if (newOutput) {
+            newOutput.scrollIntoView({ behavior: "smooth", block: "end" });
+          }
+
+          setTimeout(() => {
+            resetForm(true);
+          }, lines.length * 100 + 500); // Wait for animation + a small delay
+        }
+      }
+
+      function textEffect(line) {
+        const alpha = [";", ".", ",", ":", ";", "~", "`"];
+        const animationSpeed = 10;
+        const string = line.textContent;
+        const splitString = string.split("");
+        let copyString = [...splitString];
+
+        let emptyString = copyString.map((el, index) => {
+          return [alpha[Math.floor(Math.random() * alpha.length)], index];
+        });
+
+        emptyString = shuffle(emptyString);
+
+        copyString.forEach((el, i) => {
+          const newChar = emptyString[i];
+          toUnderscore(copyString, line, newChar);
+
+          setTimeout(() => {
+            fromUnderscore(copyString, splitString, newChar, line);
+          }, i * animationSpeed);
+        });
+      }
+
+      function toUnderscore(copyString, line, newChar) {
+        copyString[newChar[1]] = newChar[0];
+        line.textContent = copyString.join("");
+      }
+
+      function fromUnderscore(copyString, splitString, newChar, line) {
+        copyString[newChar[1]] = splitString[newChar[1]];
+        line.textContent = copyString.join("");
+      }
+
+      function shuffle(o) {
+        for (let j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+        return o;
+      }
+    });
+  </script>
+</html>
