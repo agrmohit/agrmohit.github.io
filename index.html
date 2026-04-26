@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -45,7 +45,9 @@
         font-family: JetBrains Mono;
         font-style: normal;
         font-weight: 400;
-        src: local("JetBrains Mono"), local("JetBrains Mono NL"),
+        src:
+          local("JetBrains Mono"),
+          local("JetBrains Mono NL"),
           url(/assets/webfonts/JetBrainsMono-Regular.woff2) format("woff2"),
           url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
         font-display: swap;
@@ -67,6 +69,10 @@
       src="/assets/js/script-umami.js"
       data-website-id="1f3a44cf-e368-43da-93fe-4d94a6f5867f"
       data-host-url="https://analytics.agrmohit.com"
+      data-performance="true"
+      data-sample-rate="1.0"
+      data-mask-level="moderate"
+      data-max-duration="300000"
     ></script>
     <!-- Opt-out of tracking on non-canonical urls -->
     <script>
