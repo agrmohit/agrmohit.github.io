@@ -15,6 +15,8 @@
     <meta name="description" content="An earthrise from lunar orbit, with every parameter tunable" />
     <link rel="canonical" href="https://agrmohit.com/earthrise/" />
 
+    <!-- Fetch the font alongside the CSS, not after it's parsed -->
+    <link rel="preload" href="/assets/webfonts/JetBrainsMono-Regular-subset.woff2" as="font" type="font/woff2" crossorigin />
     <style>
       @font-face {
         font-family: JetBrains Mono;
@@ -23,7 +25,7 @@
         src:
           local("JetBrains Mono"),
           local("JetBrains Mono NL"),
-          url(/assets/webfonts/JetBrainsMono-Regular.woff2) format("woff2"),
+          url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2"),
           url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
         font-display: swap;
       }
