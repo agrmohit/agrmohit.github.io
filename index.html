@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -62,6 +62,13 @@
     <script type="module" src="/assets/js/css-global-variables.js"></script>
     <script type="module" src="/assets/js/script-theme.js"></script>
     <script type="module" src="/assets/js/script-stars.js"></script>
+    <script type="module" src="/assets/earthrise/home.js"></script>
+    <!-- Fetch the earthrise's modules and stars together, not one import at a time -->
+    <link rel="modulepreload" href="/assets/earthrise/scene.js" />
+    <link rel="modulepreload" href="/assets/earthrise/astronomy.js" />
+    <link rel="modulepreload" href="/assets/earthrise/stars.js" />
+    <link rel="modulepreload" href="/assets/earthrise/earth-texture.js" />
+    <link rel="preload" href="/assets/earthrise/data/stars-ecliptic.bin" as="fetch" crossorigin />
 
     <!-- Umami - Privacy preserving analytics tracking script -->
     <script
@@ -115,6 +122,7 @@
   </head>
 
   <body>
+    <canvas id="earthrise" aria-hidden="true"></canvas>
     <header>
       <nav>
         <span><a href="/" data-umami-event="home" data-umami-event-source="nav-bar">Home</a></span>

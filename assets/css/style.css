@@ -274,6 +274,25 @@ main {
   margin-block-start: 1.1rem;
 }
 
+/* A quiet earthrise behind the page, drawn by script-earthrise.js */
+#earthrise {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* A halo in the page colour round every glyph, so text never sits on a dot */
+body {
+  text-shadow:
+    0 0 1px var(--background-primary),
+    0 0 2px var(--background-primary),
+    0 0 3px var(--background-primary),
+    0 0 4px var(--background-primary);
+}
+
 .emoji-xl {
   font-size: 2rem;
 }
