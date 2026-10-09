@@ -41,6 +41,8 @@
     <!-- Metadata end -->
 
     <!-- Fetch the font alongside the CSS, not after it's parsed -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/assets/webfonts/JetBrainsMono-Regular-subset.woff2" as="font" type="font/woff2" crossorigin />
     <style>
       @font-face {
@@ -51,7 +53,7 @@
           local("JetBrains Mono"),
           local("JetBrains Mono NL"),
           url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2"),
-          url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("ttf");
+          url(/assets/webfonts/JetBrainsMono-Regular.ttf) format("truetype");
         font-display: swap;
       }
       /* Putting it in css may cause layout shift in slow networks */

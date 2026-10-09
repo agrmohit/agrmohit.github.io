@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- A shell prompt and the Earth, seen from Mars. Martian sunsets glow blue, hence the haze over the horizon -->
+  <defs>
+    <clipPath id="tile"><rect width="32" height="32" rx="6" /></clipPath>
+    <clipPath id="day"><path d="M21 7.5A7.5 7.5 0 0 0 21 22.5A3.375 7.5 0 0 0 21 7.5Z" /></clipPath>
+    <radialGradient id="haze" cx="16" cy="27" r="14" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#99d1db" stop-opacity=".45" />
+      <stop offset="1" stop-color="#99d1db" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="32" height="32" fill="#1a1a1a" />
+    <rect y="14" width="32" height="18" fill="url(#haze)" />
+    <!-- the prompt -->
+    <path d="M5 9L11 15L5 21" fill="none" stroke="#99d1db" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    <!-- the Earth: night side, day side, and land on the day side only -->
+    <circle cx="21" cy="15" r="7.5" fill="#2c3a3f" />
+    <path d="M21 7.5A7.5 7.5 0 0 0 21 22.5A3.375 7.5 0 0 0 21 7.5Z" fill="#99d1db" />
+    <path clip-path="url(#day)" d="M15 11.5q2.5-2.5 5-1t1 3.5q-1 2.5-3.5 1.5T15 11.5zM17 18q2-.5 3.5 1t-1 2.5q-2 0-2.5-3.5z" fill="#6fae9f" />
+    <!-- Mars, with a few craters -->
+    <circle cx="16" cy="64" r="39" fill="#e49a87" />
+    <ellipse cx="8.5" cy="28.5" rx="1.7" ry=".6" fill="#c67c69" />
+    <ellipse cx="22.5" cy="27.3" rx="1.2" ry=".45" fill="#c67c69" />
+    <ellipse cx="27" cy="30" rx="1.9" ry=".7" fill="#c67c69" />
+    <!-- stars -->
+    <path d="M27.5 1.5Q27.5 4.5 30.5 4.5Q27.5 4.5 27.5 7.5Q27.5 4.5 24.5 4.5Q27.5 4.5 27.5 1.5Z" fill="#fff" />
+    <path d="M13 2.9Q13 4.5 14.6 4.5Q13 4.5 13 6.1Q13 4.5 11.4 4.5Q13 4.5 13 2.9Z" fill="#99d1db" />
+  </g>
+</svg>
