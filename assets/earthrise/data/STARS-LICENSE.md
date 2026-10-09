@@ -11,6 +11,6 @@ ecliptic longitude (uint16, 360/65536 degrees), ecliptic latitude (int16, 90/327
 magnitude (uint8, value / 25 - 2) and B-V colour index (int8, value / 60). Brightest first;
 `stars-bright.bin` holds magnitude 6.5 and brighter.
 
-`stars-ecliptic.bin` holds the stars of `stars-bright.bin` within 12 degrees of the
-ecliptic, in the same format and order, for the home page, whose narrow field never
-strays further from it.
+`stars-ecliptic.bin` holds the stars of `stars-bright.bin` and `stars-faint.bin`
+within 12 degrees of the ecliptic, in the same format and order, for narrow views
+like the home page's, which never stray further from it.

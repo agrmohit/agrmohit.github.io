@@ -28,7 +28,7 @@ export const DEFAULTS = {
   skyRoll: 0, // deg; 0 for an orbit in the ecliptic. An orbit inclined to it rolls the sky by up to its inclination, the sign set by where the node lies
   timeScale: 0.3, // 1 is real time
   fov: 10, // deg across the canvas's longer side (Apollo 8: 250 mm lens on a 56 mm square frame, 12.8 on a side)
-  limitingMag: 6.5, // faintest star shown; past 6.5 the faint catalogue (195 kB) loads, up to 8
+  limitingMag: 8, // faintest star shown, up to 8; in a wide view, past 6.5 the faint catalogue (195 kB) loads
   // --- artistic ---
   horizon: 0.62, // where the horizon sits, as a fraction of the screen's height
   craterStretch: 4, // 1 is true; above that, craters are stretched along the track to read at all
@@ -378,15 +378,15 @@ export function earthrise(canvas, params = {}) {
   // the real sky round the Earth, projected onto the screen (gnomonic) about
   // the Earth's direction; kept as offsets from the Earth, since they rise together
   // Which star files this view needs. A narrow view never strays far from the
-  // ecliptic, so it makes do with the band within 12 degrees of it (10 kB, not 54);
-  // wider or rolled views, or fainter stars, take the whole sky.
+  // ecliptic, so it makes do with the band within 12 degrees of it (45 kB, not 249);
+  // wider or rolled views take the whole sky.
   const starFiles = () => {
     const roll = p.skyRoll * RAD;
     // the farthest from the Earth's latitude a visible star can sit: half the width
     // across, plus up to the full height once the sky is rolled
     const across = ((W / 2) * Math.abs(Math.cos(roll)) + H * Math.abs(Math.sin(roll))) / scale / RAD;
     const reach = Math.abs(phys.earthLat) + 0.5 + across; // 0.5: the camera's parallax, with room to spare
-    if (p.limitingMag <= 6.5 && reach <= 12) return ["ecliptic"];
+    if (reach <= 12) return ["ecliptic"];
     return p.limitingMag <= 6.5 ? ["bright"] : ["bright", "faint"];
   };
   const layoutStars = () => {
