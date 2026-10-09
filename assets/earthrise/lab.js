@@ -246,10 +246,10 @@ const readout = () => {
       "earth among stars",
       `ecliptic ${x.earthLon.toFixed(2)}°, ${x.earthLat >= 0 ? "+" : ""}${x.earthLat.toFixed(2)}° (date)`,
     ],
-    ["bright limb", `${x.limbAngle.toFixed(1)}° from the right, toward up`],
+    ["bright limb", `${Math.abs(x.limbAngle).toFixed(1)}° ${x.limbAngle < 0 ? "clockwise" : "anticlockwise"} from the right`],
     [
       "sun at camera",
-      `${sunElevation(x).toFixed(1)}° ${sunElevation(x) > 0 ? "up: day below" : "down: night below"}${p.realLight ? "" : " (not drawn: real sunlight is off)"}`,
+      `${Math.abs(sunElevation(x)).toFixed(1)}° ${sunElevation(x) > 0 ? "above the horizon (day below)" : "below the horizon (night below)"}${p.realLight ? "" : ", not drawn: real sunlight is off"}`,
     ],
     ["earth size", `${(x.earthDiameter / RAD).toFixed(3)}° (${((x.earthDiameter / RAD) * 60).toFixed(1)}′)`],
     ["orbital period", `${(x.period / 60).toFixed(1)} min`],
@@ -257,7 +257,7 @@ const readout = () => {
     ["ground track speed", `${x.groundSpeed.toFixed(3)} km/s`],
     ["horizon dip", `${(x.dip / RAD).toFixed(2)}°`],
     ["horizon distance", `${Math.round(x.horizonDistance)} km`],
-    ["sky turns", `${(x.rate / RAD).toFixed(4)}°/s, an earth width in ${(x.earthDiameter / x.rate).toFixed(0)} s`],
+    ["sky turns", `${(x.rate / RAD).toFixed(4)}°/s, an Earth width in ${(x.earthDiameter / x.rate).toFixed(0)} s`],
     ["one pass", `${x.passDuration.toFixed(0)} s of orbit, ${x.passLength.toFixed(0)} s on screen`],
     ["worst text contrast", `${worst.toFixed(2)}:1 ${worst >= 4.5 ? "(passes AA)" : "(fails AA, 4.5)"}`],
   ];
