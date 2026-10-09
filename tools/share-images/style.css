@@ -3,23 +3,28 @@
   font-family: "JetBrains Mono";
   src: url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2");
 }
+:root {
+  --bg: #1a1a1a;
+  --accent: #99d1db;
+  --dim: #8b8f99;
+}
 html,
 body {
   margin: 0;
-  background: #1a1a1a;
+  background: var(--bg);
 }
 .card {
   position: relative;
   overflow: hidden;
-  background: #1a1a1a;
   text-shadow:
-    0 0 2px #1a1a1a,
-    0 0 4px #1a1a1a,
-    0 0 8px #1a1a1a;
+    0 0 2px var(--bg),
+    0 0 4px var(--bg),
+    0 0 8px var(--bg);
 }
 canvas {
   position: absolute;
   top: 0;
+  height: 100%;
   transition: none !important; /* the scene fades in; a still is taken at once */
 }
 .text {
@@ -41,18 +46,16 @@ canvas {
   line-height: normal; /* Avenir Next's taller line sets the gap below the name */
 }
 .role {
-  color: #99d1db;
+  color: var(--accent);
 }
-.prompt {
-  color: #8b8f99;
+.prompt,
+.dot {
+  color: var(--dim);
 }
 .prompt b {
   font-weight: 400;
-  color: #99d1db;
+  color: var(--accent);
 }
 .handle {
   color: #e49a87;
-}
-.dot {
-  color: #8b8f99;
 }

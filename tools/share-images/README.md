@@ -5,10 +5,10 @@ the Earth just below the Pleiades).
 
 | Image | Size | For | Page |
 | --- | --- | --- | --- |
-| `assets/img/contact-card.png` | 1560 x 819 | link previews of the home page | `index.html` |
+| `assets/img/contact-card.png` | 1560 x 819 | link previews of the home page | `contact.html` |
 | `projects/earthrise/card.png` | 1560 x 819 | link previews of /projects/earthrise/ | `post.html` |
-| `assets/img/banner.png` | 1500 x 500 | Bluesky, Mastodon and X banners | `banner.html` |
-| `assets/img/banner-linkedin.png` | 1584 x 396 | LinkedIn banner | `banner-linkedin.html` |
+| `assets/img/banner.png` | 1500 x 500 | Bluesky, Mastodon and X banners | `contact.html?layout=banner` |
+| `assets/img/banner-linkedin.png` | 1584 x 396 | LinkedIn banner | `contact.html?layout=linkedin` |
 
 Needs macOS (for Futura and Avenir Next), Google Chrome and [uv](https://docs.astral.sh/uv/). Output is
 byte-identical between runs on the same machine.
@@ -26,7 +26,7 @@ Put the image next to its page and point the page's `og:` and `twitter:` tags at
 
 ## Edit
 
-- Text: `index.html` and the banner pages. Wrap a "j" in `<span class="j">`, since Futura's looks like an "i"
+- Text and layouts: `contact.html`. Wrap a "j" in `<span class="j">`, since Futura's looks like an "i"
   (`post.html` does it for you).
 - Colours and fonts: `style.css`. Sky: `sky.js`.
 - Preview a page by serving the repo (`python3 -m http.server`) and opening it at its size.

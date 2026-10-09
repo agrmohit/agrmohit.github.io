@@ -2,12 +2,6 @@
 <html lang="en-IN">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none';"
-    />
     <title>Banner crops</title>
     <!-- How each platform crops the banners and where its avatar lands, at the platforms' own CSS sizes.
          Bluesky and Mastodon are from their source (social-app's Profile/Header/Shell.tsx,
@@ -25,6 +19,7 @@
         flex-wrap: wrap;
         gap: 32px;
         margin-bottom: 32px;
+        zoom: 1.5;
       }
       h2 {
         width: 100%;
@@ -43,6 +38,7 @@
         position: relative;
         width: var(--w);
         height: var(--h);
+        margin-bottom: 60px;
         outline: 1px solid #555;
       }
       .frame img {
@@ -57,7 +53,7 @@
         top: var(--y);
         width: var(--s);
         height: var(--s);
-        border-radius: var(--r, 50%);
+        border-radius: 50%;
         background: rgb(228 154 135 / 0.35);
         border: 2px dashed #e49a87;
         box-sizing: border-box;
@@ -73,12 +69,6 @@
         background: #1f1f1f;
         z-index: -1;
       }
-      .frame {
-        margin-bottom: 60px;
-      }
-      .zoom {
-        zoom: 1.5;
-      }
     </style>
   </head>
 
@@ -88,7 +78,7 @@
       shape is the avatar. Text and the Earth should stay clear of every one.
     </p>
 
-    <section class="zoom">
+    <section>
       <h2>banner.png (1500 × 500)</h2>
       <figure>
         <figcaption>Bluesky · phone</figcaption>
@@ -108,14 +98,14 @@
         <figcaption>Mastodon · phone</figcaption>
         <div class="frame" style="--w: 390px; --h: 120px">
           <img src="/assets/img/banner.png" alt="" />
-          <div class="avatar" style="--x: 14px; --y: 56px; --s: 80px; "></div>
+          <div class="avatar" style="--x: 14px; --y: 56px; --s: 80px"></div>
         </div>
       </figure>
       <figure>
         <figcaption>Mastodon · desktop</figcaption>
         <div class="frame" style="--w: 600px; --h: 160px">
           <img src="/assets/img/banner.png" alt="" />
-          <div class="avatar" style="--x: 14px; --y: 96px; --s: 80px; "></div>
+          <div class="avatar" style="--x: 14px; --y: 96px; --s: 80px"></div>
         </div>
       </figure>
       <figure>
@@ -127,7 +117,7 @@
       </figure>
     </section>
 
-    <section class="zoom">
+    <section>
       <h2>banner-linkedin.png (1584 × 396)</h2>
       <figure>
         <figcaption>LinkedIn · phone</figcaption>

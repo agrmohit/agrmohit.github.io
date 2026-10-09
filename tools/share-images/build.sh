@@ -73,9 +73,9 @@ if [ "${1:-}" = page ]; then
 fi
 
 # the card: 1200 x 630 at 1.3x gives 1560 x 819, the size the og:image tags declare
-shoot index.html 1200 630 1.3 assets/img/contact-card.png
+shoot contact.html 1200 630 1.3 assets/img/contact-card.png
 # the banners: 1500 x 500 for Bluesky, Mastodon and X; LinkedIn's 1584 x 396
-shoot banner.html 1500 500 1 assets/img/banner.png
-shoot banner-linkedin.html 1584 396 1 assets/img/banner-linkedin.png
+shoot contact.html?layout=banner 1500 500 1 assets/img/banner.png
+shoot contact.html?layout=linkedin 1584 396 1 assets/img/banner-linkedin.png
 page "Earthrise" "the real sky,
 from lunar orbit" "agrmohit.com/projects/earthrise" projects/earthrise/card.png

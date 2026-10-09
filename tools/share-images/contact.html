@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <title>Contact card</title>
+    <!-- The contact card and the banners, by ?layout=: card (the og:image, the default), banner (3:1, for Bluesky,
+         Mastodon and X) or linkedin (4:1). build.sh turns each into its image -->
+    <script>
+      document.documentElement.dataset.layout = new URLSearchParams(location.search).get("layout") ?? "card";
+    </script>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      [data-layout="card"] {
+        .card {
+          width: 1200px;
+          height: 630px;
+        }
+        /* the scene centres the Earth, so a canvas twice as wide as the Earth's x puts it at x = 920 */
+        canvas {
+          left: 0;
+          width: 1840px;
+        }
+        .text {
+          left: 72px;
+          top: 73px;
+          font-size: 30px;
+        }
+        .name {
+          font-size: 116px;
+          -webkit-text-stroke: 2px #fff;
+        }
+        .role {
+          margin-top: 22px;
+          font-size: 50px;
+        }
+        .prompt {
+          margin-top: 44px;
+        }
+        .contact {
+          margin-top: 10px;
+        }
+      }
+
+      [data-layout="banner"] {
+        .card {
+          width: 1500px;
+          height: 500px;
+        }
+        /* a 3000px canvas starting at -350px puts the Earth at x = 1150 */
+        canvas {
+          left: -350px;
+          width: 3000px;
+        }
+        /* Inside the zone every platform shows: Bluesky crops up to 65px off the top and bottom on
+           desktop and 100px off each side on phones, and Mastodon's phone avatar covers x < 370, y > 230 */
+        .text {
+          left: 470px;
+          top: 85px;
+          font-size: 28px;
+          line-height: 1.2;
+        }
+        .name {
+          font-size: 96px;
+          -webkit-text-stroke: 1.5px #fff;
+        }
+        .role {
+          margin-top: 18px;
+          font-size: 40px;
+        }
+        .prompt {
+          margin-top: 28px;
+        }
+        .contact {
+          margin-top: 6px;
+        }
+      }
+
+      [data-layout="linkedin"] {
+        .card {
+          width: 1584px;
+          height: 396px;
+        }
+        /* a 3200px canvas starting at -350px puts the Earth at x = 1250 */
+        canvas {
+          left: -350px;
+          width: 3200px;
+        }
+        /* starts right of the profile photo: on phones it covers x < 525 below y 185 */
+        .text {
+          left: 580px;
+          top: 34px;
+          font-size: 24px;
+          line-height: 1.2;
+        }
+        .name {
+          font-size: 84px;
+          -webkit-text-stroke: 1.5px #fff;
+        }
+        .role {
+          margin-top: 16px;
+          font-size: 36px;
+        }
+        .prompt {
+          margin-top: 26px;
+        }
+        .contact {
+          margin-top: 6px;
+        }
+      }
+    </style>
+    <script type="module" src="sky.js"></script>
+  </head>
+
+  <body>
+    <div class="card">
+      <canvas></canvas>
+      <div class="text">
+        <div class="name">Mohit Ra<span class="j">j</span></div>
+        <div class="role">backend developer</div>
+        <div class="prompt">$ <b>contact</b></div>
+        <div class="contact">
+          <span class="handle">@agrmohit</span> <span class="dot">·</span> <span>hi@agrmohit.com</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

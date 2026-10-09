@@ -1,12 +1,13 @@
 // The sky behind every share image: the real earthrise engine, held still.
 import { earthrise } from "/assets/earthrise/scene.js";
 
+// how each layout frames the same moment, by the data-layout on <html>
 const scenes = {
   card: { fov: 14, horizon: 0.74 },
   banner: { fov: 18, horizon: 0.82 },
   linkedin: { fov: 22, horizon: 0.88 }, // a lower horizon keeps the ground clear of the text
-  post: { fov: 11, horizon: 0.76 },
 };
+scenes.post = scenes.card; // every link preview shares one sky
 
 const canvas = document.querySelector("canvas");
 earthrise(canvas, {
@@ -21,5 +22,5 @@ earthrise(canvas, {
   // small need the pop, and their text has its own halo
   amax: 0.5,
   earthTint: 0.7,
-  ...scenes[canvas.dataset.scene],
+  ...scenes[document.documentElement.dataset.layout],
 });

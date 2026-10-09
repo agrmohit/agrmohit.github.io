@@ -23,7 +23,7 @@ role.hidden = !sub;
 // a break opportunity after every / and -, used only if the URL has to wrap
 for (const part of url.split(/(?<=[/-])/)) link.append(part, document.createElement("wbr"));
 
-const SKY = 470; // the horizon's at 0.76 of 630; keep the text above it
+const SKY = 470; // the horizon's at 0.74 of 630; keep the text above it
 const MIN_TOP = 56;
 
 await document.fonts.ready;
@@ -33,7 +33,7 @@ if (link.scrollWidth > text.clientWidth) link.classList.add("wrap");
 
 for (let size = 104; size >= 48; size -= 4) {
   name.style.fontSize = `${size}px`;
-  const lines = Math.round(name.offsetHeight / (size * 1.1));
+  const lines = Math.round(name.offsetHeight / parseFloat(getComputedStyle(name).lineHeight));
   if (lines <= 3 && text.offsetHeight <= SKY - MIN_TOP) break;
 }
 
