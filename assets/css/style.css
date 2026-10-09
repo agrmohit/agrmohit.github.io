@@ -235,6 +235,14 @@ a:hover {
   text-decoration: underline wavy;
 }
 
+/* Links within text get a quiet underline, so colour isn't the only cue */
+p a,
+li > a {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+  text-underline-offset: 0.2em;
+}
+
 small {
   font-size: inherit;
   color: var(--text-secondary);
@@ -295,18 +303,6 @@ body {
 
 .emoji-xl {
   font-size: 2rem;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --background-primary: #f9fffa;
-    --text-primary: #000000;
-    --text-secondary: #6c6f85;
-    --text-strong: #353745;
-    --text-accent: #049d67;
-    --text-quote: #dd7878;
-    --line-height: 1.25rem;
-  }
 }
 
 @media (max-width: 500px) {
