@@ -39,9 +39,11 @@ built banner the way each platform draws it, with the avatar outlined. Open it a
 
 For the 3:1 banner, keep text and the Earth within x 100–1400 and y 65–435, and out of the lower left
 (x < 370 below y 230). Bluesky's numbers come from its app's source (`src/screens/Profile/Header/Shell.tsx`),
-Mastodon's from its web client's (`app/javascript/mastodon/components/account_header`). X and LinkedIn
-aren't open source, so their outlines are measured from screenshots and only approximate. Check LinkedIn
-in its phone app after uploading.
+Mastodon's from its web client's (`app/javascript/mastodon/components/account_header`). LinkedIn's are
+measured from screenshots of its site and Android app. X's are an estimate, not yet checked.
+
+For the LinkedIn banner, keep text right of x 525 below y 185: the phone app's photo is much larger than
+the desktop one.
 
 ## After changing the card
 

@@ -11,7 +11,7 @@
     <title>Banner crops</title>
     <!-- How each platform crops the banners and where its avatar lands, at the platforms' own CSS sizes.
          Bluesky and Mastodon are from their source (social-app's Profile/Header/Shell.tsx,
-         mastodon's components/account_header); X and LinkedIn are measured from screenshots, so approximate. -->
+         mastodon's components/account_header); LinkedIn is measured from screenshots, and X is approximate. -->
     <style>
       body {
         margin: 0;
@@ -108,14 +108,14 @@
         <figcaption>Mastodon · phone</figcaption>
         <div class="frame" style="--w: 390px; --h: 120px">
           <img src="/assets/img/banner.png" alt="" />
-          <div class="avatar" style="--x: 14px; --y: 56px; --s: 80px; --r: 8px"></div>
+          <div class="avatar" style="--x: 14px; --y: 56px; --s: 80px; "></div>
         </div>
       </figure>
       <figure>
         <figcaption>Mastodon · desktop</figcaption>
         <div class="frame" style="--w: 600px; --h: 160px">
           <img src="/assets/img/banner.png" alt="" />
-          <div class="avatar" style="--x: 14px; --y: 96px; --s: 80px; --r: 8px"></div>
+          <div class="avatar" style="--x: 14px; --y: 96px; --s: 80px; "></div>
         </div>
       </figure>
       <figure>
@@ -130,7 +130,14 @@
     <section class="zoom">
       <h2>banner-linkedin.png (1584 × 396)</h2>
       <figure>
-        <figcaption>LinkedIn · desktop (approximate)</figcaption>
+        <figcaption>LinkedIn · phone</figcaption>
+        <div class="frame" style="--w: 412px; --h: 103px">
+          <img src="/assets/img/banner-linkedin.png" alt="" />
+          <div class="avatar" style="--x: 18px; --y: 50px; --s: 118px"></div>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>LinkedIn · desktop</figcaption>
         <div class="frame" style="--w: 804px; --h: 201px">
           <img src="/assets/img/banner-linkedin.png" alt="" />
           <div class="avatar" style="--x: 24px; --y: 104px; --s: 162px"></div>
