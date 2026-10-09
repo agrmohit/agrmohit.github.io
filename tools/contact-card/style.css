@@ -1,0 +1,58 @@
+/* Shared by the contact card and the banner; each page sets its own sizes */
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2");
+}
+html,
+body {
+  margin: 0;
+  background: #1a1a1a;
+}
+.card {
+  position: relative;
+  overflow: hidden;
+  background: #1a1a1a;
+  text-shadow:
+    0 0 2px #1a1a1a,
+    0 0 4px #1a1a1a,
+    0 0 8px #1a1a1a;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  transition: none !important; /* the scene fades in; a still is taken at once */
+}
+.text {
+  position: absolute;
+  font-family: "JetBrains Mono", monospace;
+  color: #e0e4ef;
+}
+/* Futura Medium, firmed up a touch with an outline; Futura's own j reads as an i, so it comes from Avenir Next */
+.name {
+  font-family: Futura;
+  font-weight: 500;
+  letter-spacing: 1px;
+  line-height: 1;
+  color: #fff;
+}
+.name .j {
+  font-family: "Avenir Next";
+  font-weight: 600;
+  line-height: normal; /* Avenir Next's taller line sets the gap below the name */
+}
+.role {
+  color: #99d1db;
+}
+.prompt {
+  color: #8b8f99;
+}
+.prompt b {
+  font-weight: 400;
+  color: #99d1db;
+}
+.handle {
+  color: #e49a87;
+}
+.dot {
+  color: #8b8f99;
+}

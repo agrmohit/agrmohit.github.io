@@ -8,38 +8,40 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none';"
     />
-    <title>Contact card</title>
-    <!-- The link-preview image (og:image). build.sh turns this page into assets/img/contact-card.png -->
+    <title>LinkedIn banner</title>
+    <!-- The LinkedIn banner (4:1). build.sh turns this page into assets/img/banner-linkedin.png -->
     <link rel="stylesheet" href="style.css" />
     <style>
       .card {
-        width: 1200px;
-        height: 630px;
+        width: 1584px;
+        height: 396px;
       }
-      /* the scene centres the Earth, so a canvas twice as wide as the Earth's x puts it at x = 920 */
+      /* the scene centres the Earth: a 3200px canvas starting at -350px puts it at x = 1250 */
       canvas {
-        left: 0;
-        width: 1840px;
-        height: 630px;
+        left: -350px;
+        width: 3200px;
+        height: 396px;
       }
+      /* starts right of the profile photo, which covers the bottom-left corner */
       .text {
-        left: 72px;
-        top: 73px;
-        font-size: 30px;
+        left: 440px;
+        top: 34px;
+        font-size: 24px;
+        line-height: 1.2;
       }
       .name {
-        font-size: 116px;
-        -webkit-text-stroke: 2px #fff;
+        font-size: 84px;
+        -webkit-text-stroke: 1.5px #fff;
       }
       .role {
-        margin-top: 22px;
-        font-size: 50px;
+        margin-top: 16px;
+        font-size: 36px;
       }
       .prompt {
-        margin-top: 44px;
+        margin-top: 26px;
       }
       .contact {
-        margin-top: 10px;
+        margin-top: 6px;
       }
     </style>
     <script type="module" src="sky.js"></script>
@@ -47,7 +49,7 @@
 
   <body>
     <div class="card">
-      <canvas data-scene="card"></canvas>
+      <canvas data-scene="linkedin"></canvas>
       <div class="text">
         <div class="name">Mohit Ra<span class="j">j</span></div>
         <div class="role">backend developer</div>

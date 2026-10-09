@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; object-src 'none';"
+    />
+    <title>Banner crops</title>
+    <!-- How each platform crops the banners and where its avatar lands, at the platforms' own CSS sizes.
+         Bluesky and Mastodon are from their source (social-app's Profile/Header/Shell.tsx,
+         mastodon's components/account_header); X and LinkedIn are measured from screenshots, so approximate. -->
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #2b2b2b;
+        color: #ccc;
+        font: 14px system-ui, sans-serif;
+      }
+      section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        margin-bottom: 32px;
+      }
+      h2 {
+        width: 100%;
+        margin: 0;
+        font-size: 15px;
+        color: #fff;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        margin-bottom: 6px;
+      }
+      /* the header, at the size the platform draws it; the image fills it like the platforms' object-fit: cover */
+      .frame {
+        position: relative;
+        width: var(--w);
+        height: var(--h);
+        outline: 1px solid #555;
+      }
+      .frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .avatar {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        width: var(--s);
+        height: var(--s);
+        border-radius: var(--r, 50%);
+        background: rgb(228 154 135 / 0.35);
+        border: 2px dashed #e49a87;
+        box-sizing: border-box;
+      }
+      /* the page below the header, so the avatar's overhang shows */
+      .frame::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: #1f1f1f;
+        z-index: -1;
+      }
+      .frame {
+        margin-bottom: 60px;
+      }
+      .zoom {
+        zoom: 1.5;
+      }
+    </style>
+  </head>
+
+  <body>
+    <p>
+      Each frame is the header at the platform's own size (shown 1.5×), filled the way the platform fills it. The dashed
+      shape is the avatar. Text and the Earth should stay clear of every one.
+    </p>
+
+    <section class="zoom">
+      <h2>banner.png (1500 × 500)</h2>
+      <figure>
+        <figcaption>Bluesky · phone</figcaption>
+        <div class="frame" style="--w: 390px; --h: 150px">
+          <img src="/assets/img/banner.png" alt="" />
+          <div class="avatar" style="--x: 10px; --y: 104px; --s: 94px"></div>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>Bluesky · desktop</figcaption>
+        <div class="frame" style="--w: 600px; --h: 150px">
+          <img src="/assets/img/banner.png" alt="" />
+          <div class="avatar" style="--x: 10px; --y: 104px; --s: 94px"></div>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>Mastodon · phone</figcaption>
+        <div class="frame" style="--w: 390px; --h: 120px">
+          <img src="/assets/img/banner.png" alt="" />
+          <div class="avatar" style="--x: 14px; --y: 56px; --s: 80px; --r: 8px"></div>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>Mastodon · desktop</figcaption>
+        <div class="frame" style="--w: 600px; --h: 160px">
+          <img src="/assets/img/banner.png" alt="" />
+          <div class="avatar" style="--x: 14px; --y: 96px; --s: 80px; --r: 8px"></div>
+        </div>
+      </figure>
+      <figure>
+        <figcaption>X · desktop (approximate)</figcaption>
+        <div class="frame" style="--w: 600px; --h: 200px">
+          <img src="/assets/img/banner.png" alt="" />
+          <div class="avatar" style="--x: 16px; --y: 133px; --s: 134px"></div>
+        </div>
+      </figure>
+    </section>
+
+    <section class="zoom">
+      <h2>banner-linkedin.png (1584 × 396)</h2>
+      <figure>
+        <figcaption>LinkedIn · desktop (approximate)</figcaption>
+        <div class="frame" style="--w: 804px; --h: 201px">
+          <img src="/assets/img/banner-linkedin.png" alt="" />
+          <div class="avatar" style="--x: 24px; --y: 104px; --s: 162px"></div>
+        </div>
+      </figure>
+    </section>
+  </body>
+</html>
