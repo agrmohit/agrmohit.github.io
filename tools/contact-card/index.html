@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none';"
+    />
+    <title>Contact card</title>
+    <!-- The link-preview image (og:image). build.sh turns this page into assets/img/contact-card.png -->
+    <style>
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2");
+      }
+      html,
+      body {
+        margin: 0;
+        background: #1a1a1a;
+      }
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: #1a1a1a;
+        text-shadow:
+          0 0 2px #1a1a1a,
+          0 0 4px #1a1a1a,
+          0 0 8px #1a1a1a;
+      }
+      /* the scene centres the Earth, so a canvas twice as wide as the Earth's x puts it at x = 920 */
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1840px;
+        height: 630px;
+      }
+      .text {
+        position: absolute;
+        left: 72px;
+        top: 73px;
+        font: 30px "JetBrains Mono", monospace;
+        color: #e0e4ef;
+      }
+      /* Futura Medium, firmed up a touch with an outline; Futura's own j reads as an i, so it comes from Avenir Next */
+      .name {
+        font: 500 116px Futura;
+        letter-spacing: 1px;
+        line-height: 1;
+        color: #fff;
+        -webkit-text-stroke: 2px #fff;
+      }
+      .name .j {
+        font: 600 116px "Avenir Next";
+      }
+      .role {
+        margin-top: 22px;
+        font-size: 50px;
+        color: #99d1db;
+      }
+      .prompt {
+        margin-top: 44px;
+        color: #8b8f99;
+      }
+      .prompt b {
+        font-weight: 400;
+        color: #99d1db;
+      }
+      .contact {
+        margin-top: 10px;
+      }
+      .handle {
+        color: #e49a87;
+      }
+      .dot {
+        color: #8b8f99;
+      }
+    </style>
+    <script type="module" src="card.js"></script>
+  </head>
+
+  <body>
+    <div class="card">
+      <canvas></canvas>
+      <div class="text">
+        <div class="name">Mohit Ra<span class="j">j</span></div>
+        <div class="role">backend developer</div>
+        <div class="prompt">$ <b>contact</b></div>
+        <div class="contact">
+          <span class="handle">@agrmohit</span> <span class="dot">·</span> <span>hi@agrmohit.com</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
