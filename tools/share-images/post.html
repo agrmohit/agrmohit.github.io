@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; object-src 'none';"
+    />
+    <title>Page preview</title>
+    <!-- The link-preview image for any page: ?title=…&sub=…&url=… (sub is optional; a newline in it breaks the line).
+         `sh build.sh page …` turns it into a PNG; see README.md -->
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .card {
+        width: 1200px;
+        height: 630px;
+      }
+      /* the scene centres the Earth: a 2400px canvas starting at -350px puts it at x = 850 */
+      canvas {
+        left: -350px;
+        width: 2400px;
+        height: 630px;
+      }
+      /* the sky left of the Earth; post.js centres the block in it and shrinks long text to fit */
+      .text {
+        left: 72px;
+        width: 560px;
+      }
+      .name {
+        font-size: 104px;
+        line-height: 1.1;
+        overflow-wrap: break-word;
+        text-wrap: balance;
+      }
+      /* titles can wrap, so the j mustn't stretch its line */
+      .name .j {
+        line-height: inherit;
+      }
+      .role {
+        margin-top: 22px;
+        font-size: 34px;
+        line-height: 1.3;
+        white-space: pre-line;
+        text-wrap: balance;
+      }
+      .url {
+        margin-top: 30px;
+        font-size: 26px;
+        line-height: 1.3;
+        color: #8b8f99;
+        white-space: nowrap;
+      }
+      /* too long even when small: wrap after a / or - */
+      .url.wrap {
+        white-space: normal;
+      }
+    </style>
+    <script type="module" src="post.js"></script>
+    <script type="module" src="sky.js"></script>
+  </head>
+
+  <body>
+    <div class="card">
+      <canvas data-scene="post"></canvas>
+      <div class="text">
+        <div class="name"></div>
+        <div class="role"></div>
+        <div class="url"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-/* Shared by the contact card and the banner; each page sets its own sizes */
+/* Shared by every page here; each sets its own sizes */
 @font-face {
   font-family: "JetBrains Mono";
   src: url(/assets/webfonts/JetBrainsMono-Regular-subset.woff2) format("woff2");
