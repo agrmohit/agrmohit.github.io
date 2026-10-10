@@ -1,1 +1,4 @@
 .cloudflare/
+# a global Icon* rule, for macOS folder icons, would hide these on a case-insensitive disk
+!tools/icons/
+!assets/img/icon-*.png

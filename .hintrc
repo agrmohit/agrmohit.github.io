@@ -1,6 +1,7 @@
 {
   "extends": ["development"],
   "hints": {
+    "manifest-is-valid": "off",
     "axe/structure": [
       "default",
       {

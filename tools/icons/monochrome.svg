@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- favicon.svg as a single-colour silhouette for Android's themed icons: only the alpha channel counts -->
+  <defs>
+    <mask id="craters">
+      <rect width="32" height="32" fill="#fff" />
+      <ellipse cx="8.5" cy="28.5" rx="1.7" ry=".6" />
+      <ellipse cx="22.5" cy="27.3" rx="1.2" ry=".45" />
+      <ellipse cx="27" cy="30" rx="1.9" ry=".7" />
+    </mask>
+    <mask id="land">
+      <rect width="32" height="32" fill="#fff" />
+      <path d="M15 11.5q2.5-2.5 5-1t1 3.5q-1 2.5-3.5 1.5T15 11.5zM17 18q2-.5 3.5 1t-1 2.5q-2 0-2.5-3.5z" />
+    </mask>
+  </defs>
+  <!-- Mars, full bleed like the maskable icon -->
+  <circle cx="16" cy="64" r="39" mask="url(#craters)" />
+  <!-- the prompt, the Earth's day side and the stars, inside the safe zone -->
+  <g transform="translate(16 15) scale(0.8) translate(-16 -15)">
+    <path d="M5 9L11 15L5 21" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M21 7.5A7.5 7.5 0 0 0 21 22.5A3.375 7.5 0 0 0 21 7.5Z" mask="url(#land)" />
+    <circle cx="21" cy="15" r="7.5" fill="none" stroke="#000" stroke-width=".8" />
+    <path d="M27.5 1.5Q27.5 4.5 30.5 4.5Q27.5 4.5 27.5 7.5Q27.5 4.5 24.5 4.5Q27.5 4.5 27.5 1.5Z" />
+    <path d="M13 2.9Q13 4.5 14.6 4.5Q13 4.5 13 6.1Q13 4.5 11.4 4.5Q13 4.5 13 2.9Z" />
+  </g>
+</svg>
