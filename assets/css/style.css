@@ -134,6 +134,7 @@ h2:hover {
 
 /* faded out rather than hidden, so keyboards can still reach them and screen readers still read them */
 .anchor-link {
+  text-decoration: none;
   opacity: 0;
   transition: opacity 0.25s ease-out;
 }
@@ -231,8 +232,15 @@ a {
   text-decoration: none;
 }
 
+/* links in the page's text get a faint dotted underline, so they don't stand out by colour alone */
+main a {
+  text-decoration: underline dotted 2px color-mix(in srgb, currentColor 30%, transparent);
+  text-underline-offset: 4px;
+}
+
 a:hover {
   text-decoration: underline wavy;
+  text-underline-offset: auto;
 }
 
 small {
@@ -321,8 +329,10 @@ p:hover .emoji-wave {
   animation-iteration-count: infinite;
 }
 
+/* the same faint dots as links, in the text's own colour */
 .explanation {
-  text-decoration: underline dotted;
+  text-decoration: underline dotted 2px color-mix(in srgb, currentColor 30%, transparent);
+  text-underline-offset: 4px;
 }
 
 @keyframes wave-animation {
