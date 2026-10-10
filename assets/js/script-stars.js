@@ -1,5 +1,5 @@
 // Show each project's GitHub stars next to its title, if it has any.
-// The counts come from workers/github-stars, which caches them for 6 hours, so visitors never reach GitHub.
+// The counts come from workers/github-stars, which refreshes them hourly, so visitors never reach GitHub.
 async function GitHubStars() {
   let stars;
   if (window.location.hostname === "127.0.0.1") {

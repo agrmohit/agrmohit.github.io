@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The Earth rising over the Moon's horizon, for the Earthrise shortcut -->
+  <defs>
+    <clipPath id="sky"><rect width="32" height="23" /></clipPath>
+    <clipPath id="day"><path d="M16 6A9 9 0 0 0 16 24A4.5 9 0 0 0 16 6Z" /></clipPath>
+  </defs>
+  <rect width="32" height="32" fill="#1a1a1a" />
+  <g clip-path="url(#sky)">
+    <!-- the Earth: night side, day side, and land on the day side only -->
+    <circle cx="16" cy="15" r="9" fill="#2c3a3f" />
+    <path d="M16 6A9 9 0 0 0 16 24A4.5 9 0 0 0 16 6Z" fill="#99d1db" />
+    <path clip-path="url(#day)" d="M8.5 11q3-3 6-1.2t1.2 4.2q-1.2 3-4.2 1.8T8.5 11zM11 19q2.4-.6 4.2 1.2t-1.2 3q-2.4 0-3-4.2z" fill="#6fae9f" />
+  </g>
+  <!-- the Moon, with a few craters -->
+  <circle cx="16" cy="66" r="44" fill="#8b8f99" />
+  <ellipse cx="7" cy="27" rx="2" ry=".7" fill="#6f737c" />
+  <ellipse cx="21" cy="25.5" rx="1.4" ry=".5" fill="#6f737c" />
+  <ellipse cx="27" cy="29" rx="2.2" ry=".8" fill="#6f737c" />
+  <!-- stars -->
+  <path d="M27 3Q27 6 30 6Q27 6 27 9Q27 6 24 6Q27 6 27 3Z" fill="#fff" />
+  <path d="M5 4.4Q5 6 6.6 6Q5 6 5 7.6Q5 6 3.4 6Q5 6 5 4.4Z" fill="#99d1db" />
+</svg>

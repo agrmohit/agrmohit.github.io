@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the home-screen and app icons in assets/img/ from favicon.svg. Run with -h for usage."""
+"""Build the home-screen and app icons in assets/img/ from favicon.svg and this folder's SVGs. Run with -h for usage."""
 
 import argparse
 import subprocess
@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 FAVICON = ROOT / "assets/img/favicon.svg"
 MONOCHROME = Path(__file__).with_name("monochrome.svg")
+EARTHRISE = Path(__file__).with_name("earthrise.svg")
 OUT = ROOT / "assets/img"
 
 # the maskable icon's safe zone is the central circle, 80% of the width: this keeps the prompt and the Earth inside it
@@ -54,6 +55,7 @@ def main():
     render(favicon, 512, OUT / "icon-512.png")
     render(maskable(favicon), 512, OUT / "icon-maskable-512.png")
     render(MONOCHROME.read_text(), 512, OUT / "icon-monochrome-512.png")
+    render(EARTHRISE.read_text(), 96, OUT / "shortcut-earthrise-96.png")  # for the Earthrise shortcut
 
 
 if __name__ == "__main__":

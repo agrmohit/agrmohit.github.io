@@ -10,6 +10,11 @@ the Earth just below the Pleiades).
 | `assets/img/banner.png` | 1500 x 500 | Bluesky, Mastodon and X banners | `contact.html?layout=banner` |
 | `assets/img/banner-linkedin.png` | 1584 x 396 | LinkedIn banner | `contact.html?layout=linkedin` |
 
+`build.sh screenshots` also photographs the live site for the install dialog that `manifest.webmanifest` gets:
+`assets/img/screenshots/`, the home page and the earthrise lab at 1280 x 720 and at a phone's 412 x 915, under the
+same sky as the images above. Only the star counts change between runs. Set `SITE=http://127.0.0.1:8765` to shoot
+a local server instead, mocked star counts and all.
+
 Needs macOS (for Futura and Avenir Next), Google Chrome and [uv](https://docs.astral.sh/uv/). Output is
 byte-identical between runs on the same machine.
 
@@ -17,6 +22,7 @@ byte-identical between runs on the same machine.
 
 ```sh
 tools/share-images/build.sh             # rebuild all four
+tools/share-images/build.sh screenshots # rephotograph the live site, after a change that shows
 tools/share-images/build.sh page "Hello, world" "" "agrmohit.com/blog/hello-world" blog/hello-world/card.png
 ```
 

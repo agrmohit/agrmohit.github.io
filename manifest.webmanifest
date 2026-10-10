@@ -23,7 +23,38 @@
     {
       "name": "Earthrise",
       "description": "An earthrise from lunar orbit, with every parameter tunable",
-      "url": "/projects/earthrise/"
+      "url": "/projects/earthrise/",
+      "icons": [{ "src": "/assets/img/shortcut-earthrise-96.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/img/screenshots/home-wide.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "The home page, over an earthrise"
+    },
+    {
+      "src": "/assets/img/screenshots/earthrise-wide.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "The earthrise lab, with its controls"
+    },
+    {
+      "src": "/assets/img/screenshots/home-narrow.webp",
+      "sizes": "824x1830",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "The home page, over an earthrise"
+    },
+    {
+      "src": "/assets/img/screenshots/earthrise-narrow.webp",
+      "sizes": "824x1830",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "The earthrise lab, with its controls"
     }
   ]
 }

@@ -1,22 +1,10 @@
 // /earthrise/: every parameter of the background earthrise as a control, with the physics it implies.
-import { DEFAULTS, earthrise } from "./scene.js";
+import { DEFAULTS, earthrise, fromURL } from "./scene.js";
 
 const $ = (s) => document.querySelector(s);
 const RAD = Math.PI / 180;
 
 // --- settings live in the URL's hash, so a view can be shared ---------------
-const fromHash = () => {
-  const q = new URLSearchParams(location.hash.slice(1));
-  const p = {};
-  for (const [k, v] of q) {
-    if (!(k in DEFAULTS)) continue;
-    const d = DEFAULTS[k];
-    if (typeof d === "boolean") p[k] = v === "1";
-    else if (k === "date") p[k] = v && Number.isFinite(+v) ? +v : null;
-    else if (v !== "" && Number.isFinite(+v)) p[k] = +v;
-  }
-  return p;
-};
 const toHash = (p) => {
   const q = new URLSearchParams();
   for (const k in DEFAULTS) {
@@ -27,7 +15,7 @@ const toHash = (p) => {
 };
 
 // this page shows the whole catalogue; the home page stops at 6.5 to skip the faint file
-const initial = { limitingMag: 8, ...fromHash() };
+const initial = { limitingMag: 8, ...fromURL(location.hash.slice(1)) };
 const scene = earthrise($("#earthrise"), initial);
 
 // --- controls ---------------------------------------------------------------

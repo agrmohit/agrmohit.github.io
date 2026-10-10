@@ -41,6 +41,20 @@ export const DEFAULTS = {
   progress: 0.35, // where in the pass to start, 0 to 1
 };
 
+// Settings from a URL's query string or hash, such as "date=1883984400000&earthTint=0.7": "1" or "0" for
+// a boolean, ms since the epoch (or nothing, for now) for the date, a number for the rest. Others are ignored
+export function fromURL(query) {
+  const p = {};
+  for (const [k, v] of new URLSearchParams(query)) {
+    if (!(k in DEFAULTS)) continue;
+    const d = DEFAULTS[k];
+    if (typeof d === "boolean") p[k] = v === "1";
+    else if (k === "date") p[k] = v && Number.isFinite(+v) ? +v : null;
+    else if (v !== "" && Number.isFinite(+v)) p[k] = +v;
+  }
+  return p;
+}
+
 // --- drawing constants -------------------------------------------------------
 const INK = [196, 202, 214];
 const FADE = 3; // s, the crossfade between passes
@@ -631,21 +645,20 @@ export function earthrise(canvas, params = {}) {
     if (started) return;
     started = true;
     draw();
-    const fade = shownFade;
-    canvas.style.opacity = "0";
-    if (!still.matches) canvas.style.transition = "opacity 0.8s";
-    requestAnimationFrame(() => {
-      canvas.style.opacity = fade;
-      setTimeout(() => (canvas.style.transition = ""), 900);
-    });
+    // an animation rather than a transition, which would need a frame at opacity 0 first
+    if (!still.matches) canvas.animate({ opacity: [0, shownFade] }, 800);
     run();
   };
-  requestAnimationFrame(() =>
-    setTimeout(() => {
-      if (!laidOut) rebuild(); // the size picks the star files
-      Promise.race([loadStars(starFiles()[0]), new Promise((r) => setTimeout(r, 300))]).then(begin);
-    }),
-  );
+  let waiting = true;
+  const start = () => {
+    if (!waiting) return;
+    waiting = false;
+    if (!laidOut) rebuild(); // the size picks the star files
+    Promise.race([loadStars(starFiles()[0]), new Promise((r) => setTimeout(r, 300))]).then(begin);
+  };
+  requestAnimationFrame(() => setTimeout(start));
+  // a page in a background tab, or in a headless browser, can go without frames for a while
+  setTimeout(start, 1000);
 
   return {
     params: () => ({ ...p }),
