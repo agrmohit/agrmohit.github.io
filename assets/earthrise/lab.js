@@ -57,7 +57,7 @@ const GROUPS = [
   },
   {
     title: "sky",
-    note: "The real sky round the Earth: HYG v4.1 (Hipparcos, Yale, Gliese) to magnitude 8, J2000, carried to the date by precession; no planets. Past 6.5 the faint catalogue (195 kB) loads; the home page stops at 6.5. A real sunlit exposure would show no stars at all.",
+    note: "The real sky round the Earth: HYG v4.1 (Hipparcos, Yale, Gliese) to magnitude 8, J2000, carried to the date by precession; no planets. Past 6.5 the faint catalogue (195 kB) loads; the home page loads only the stars near the ecliptic (45 kB). A real sunlit exposure would show no stars at all.",
     controls: [{ key: "limitingMag", label: "faintest star", min: 0, max: 8, step: 0.1, unit: " mag" }],
   },
   {

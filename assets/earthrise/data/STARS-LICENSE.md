@@ -1,7 +1,7 @@
 # Star data
 
 `stars-bright.bin` and `stars-faint.bin` are derived from the
-[HYG Database](https://github.com/astronexus/HYG-Database) v4.1 by David Nash (astronexus),
+[HYG Database](https://codeberg.org/astronexus/hyg) v4.1 by David Nash (astronexus),
 licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). These derived
 files are shared under the same license.
 
@@ -14,3 +14,5 @@ magnitude (uint8, value / 25 - 2) and B-V colour index (int8, value / 60). Brigh
 `stars-ecliptic.bin` holds the stars of `stars-bright.bin` and `stars-faint.bin`
 within 12 degrees of the ecliptic, in the same format and order, for narrow views
 like the home page's, which never stray further from it.
+
+Rebuild all three with `tools/stars/build.py`, which reproduces them byte for byte.

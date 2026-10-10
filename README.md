@@ -6,4 +6,5 @@ The source of <https://agrmohit.com>, deployed to GitHub Pages by `.github/workf
 Only the paths listed in that workflow go online; `tools/` and the READMEs stay here.
 
 - `tools/share-images/`: builds the link-preview images and profile banners
+- `tools/stars/`: builds the earthrise star catalogues from HYG
 - `assets/webfonts/`: how the trimmed font is made
