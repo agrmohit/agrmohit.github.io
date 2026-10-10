@@ -63,6 +63,8 @@
     </style>
     <link rel="stylesheet" href="/assets/css/style.css" />
 
+    <!-- Fetch the GitHub star counts alongside script-stars.js, not after it runs -->
+    <link rel="preload" href="/api/stars" as="fetch" crossorigin fetchpriority="low" />
     <script type="module" src="/assets/js/script-stars.js"></script>
     <script type="module" src="/assets/earthrise/home.js"></script>
     <!-- Fetch the earthrise's modules and stars together, not one import at a time -->
