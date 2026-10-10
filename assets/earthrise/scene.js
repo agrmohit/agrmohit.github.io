@@ -582,10 +582,14 @@ export function earthrise(canvas, params = {}) {
     }
   };
 
+  // Measuring the canvas makes the browser lay out the page, so the first measure waits until something
+  // needs it: just after the page's first paint, or a caller asking for the physics sooner.
+  let laidOut = false;
   const rebuild = () => {
     // keep the same point in the pass when its length changes
     const phase = first ? p.progress : loop ? t / loop : 0;
     first = false;
+    laidOut = true;
     layout();
     t = phase * loop;
     if (started) draw();
@@ -595,12 +599,13 @@ export function earthrise(canvas, params = {}) {
     clearTimeout(pending);
     pending = setTimeout(rebuild, 150);
   };
-  // Watch the canvas itself, which can change size without the window doing so. The
-  // observer always reports once on starting; noting the size first makes that a no-op.
-  let seen = `${canvas.clientWidth}x${canvas.clientHeight}`;
+  // Watch the canvas itself, which can change size without the window doing so. The observer
+  // always reports once on starting, after the page's layout: that report only notes the size.
+  let seen;
   const ro = new ResizeObserver(() => {
     const size = `${canvas.clientWidth}x${canvas.clientHeight}`;
-    if (size !== seen) ((seen = size), onResize());
+    if (seen && size !== seen) onResize();
+    seen = size;
   });
   ro.observe(canvas);
   // a move to a screen of another density changes devicePixelRatio but not the canvas's size
@@ -621,7 +626,6 @@ export function earthrise(canvas, params = {}) {
   // Start after the page's first paint, once the stars have come (or 300 ms have
   // passed), and fade the canvas in: one layout and one draw instead of one per
   // arrival, nothing in the way of the page's own first paint, and no stars popping in.
-  rebuild();
   canvas.style.opacity = "0";
   const begin = () => {
     if (started) return;
@@ -638,13 +642,17 @@ export function earthrise(canvas, params = {}) {
   };
   requestAnimationFrame(() =>
     setTimeout(() => {
+      if (!laidOut) rebuild(); // the size picks the star files
       Promise.race([loadStars(starFiles()[0]), new Promise((r) => setTimeout(r, 300))]).then(begin);
     }),
   );
 
   return {
     params: () => ({ ...p }),
-    physics: () => ({ ...phys, passDuration: loop * p.timeScale, passLength: loop }),
+    physics: () => {
+      if (!laidOut) rebuild();
+      return { ...phys, passDuration: loop * p.timeScale, passLength: loop };
+    },
     // change any parameters; the scene is rebuilt, keeping its place in the pass
     update(next) {
       Object.assign(p, next);
