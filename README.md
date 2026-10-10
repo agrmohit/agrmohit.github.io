@@ -7,4 +7,5 @@ Only the paths listed in that workflow go online; `tools/` and the READMEs stay 
 
 - `tools/share-images/`: builds the link-preview images and profile banners
 - `tools/stars/`: builds the earthrise star catalogues from HYG
+- `workers/github-stars/`: the Cloudflare Worker behind `/api/stars`, the project star counts
 - `assets/webfonts/`: how the trimmed font is made

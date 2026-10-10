@@ -1,69 +1,34 @@
-// Get GitHub stars and add it next to project title if stars > 0
+// Show each project's GitHub stars next to its title, if it has any.
+// The counts come from workers/github-stars, which caches them for 6 hours, so visitors never reach GitHub.
 async function GitHubStars() {
-  const projectArticles = document.querySelectorAll(".github-project");
-  const fetchPromises = []; // Array to store all fetch promises
-
-  for (const projectArticle of projectArticles) {
-    const h3 = projectArticle.querySelector("h3");
-    const githubURL = h3.getAttribute("data-url");
-
-    // Create a promise for each fetch operation
-    if (window.location.hostname === "127.0.0.1") {
-      // Mock data for local development
-      fetchPromises.push(Promise.resolve(getMockStars())); // Use Promise.resolve to wrap mock data
-    } else {
-      fetchPromises.push(getGithubStars(githubURL)); // Add the fetch promise to the array
-    }
-  }
-
-  try {
-    // Wait for all fetch operations to complete in parallel
-    const starsArray = await Promise.all(fetchPromises);
-
-    // Update the DOM with fetched stars
-    projectArticles.forEach((projectArticle, index) => {
-      const h3 = projectArticle.querySelector("h3");
-      const stars = starsArray[index];
-
-      if (stars) {
-        h3.innerHTML = h3.innerHTML
-          .trim()
-          .replace(
-            "<a",
-            ` <span title="${stars} GitHub stars">(${stars}<span class="emoji-rotate">⭐</span>)</span><a`
-          );
-      }
-    });
-  } catch (error) {
-    console.error("Error fetching GitHub stars:", error);
-  }
-
-  function getMockStars() {
-    const choices = [0, 0, 4, 13, 24, 46, 50, 83, 90, 150];
-    return choices[Math.floor(Math.random() * choices.length)];
-  }
-
-  async function getGithubStars(repoURL) {
-    const url = new URL(repoURL);
-    const pathname = url.pathname;
-    const [owner, repo] = pathname.slice(1).split("/");
-    const apiURL = `https://api.github.com/repos/${owner}/${repo}`;
-
+  let stars;
+  if (window.location.hostname === "127.0.0.1") {
+    stars = new Proxy({}, { get: () => getMockStars() }); // mock data for local development
+  } else {
     try {
-      const response = await fetch(apiURL);
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Error fetching data from GitHub API: ${response.status} ${response.statusText}`);
-        console.error("Error details:", errorData);
-        return;
-      }
-
-      const data = await response.json();
-      return data.stargazers_count;
+      const response = await fetch("/api/stars");
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      stars = await response.json();
     } catch (error) {
       console.error("Error fetching GitHub stars:", error);
+      return;
     }
   }
+
+  for (const h3 of document.querySelectorAll(".github-project h3")) {
+    const repo = new URL(h3.getAttribute("data-url")).pathname.split("/")[2];
+    const count = stars[repo];
+    if (count) {
+      h3.innerHTML = h3.innerHTML
+        .trim()
+        .replace("<a", ` <span title="${count} GitHub stars">(${count}<span class="emoji-rotate">⭐</span>)</span><a`);
+    }
+  }
+}
+
+function getMockStars() {
+  const choices = [0, 0, 4, 13, 24, 46, 50, 83, 90, 150];
+  return choices[Math.floor(Math.random() * choices.length)];
 }
 
 GitHubStars();
