@@ -132,10 +132,10 @@ h2:hover {
   transition: text-decoration 0.75s ease-out;
 }
 
+/* faded out rather than hidden, so keyboards can still reach them and screen readers still read them */
 .anchor-link {
-  visibility: hidden;
   opacity: 0;
-  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+  transition: opacity 0.25s ease-out;
 }
 
 .anchor-link:hover {
@@ -144,8 +144,8 @@ h2:hover {
 
 h1:hover .anchor-link,
 h2:hover .anchor-link,
-h3:hover .anchor-link {
-  visibility: visible;
+h3:hover .anchor-link,
+.anchor-link:focus-visible {
   opacity: 1;
 }
 

@@ -183,6 +183,7 @@ scene.onProgress((f) => {
 $("#hide").addEventListener("click", () => {
   const hidden = document.body.classList.toggle("bare");
   $("#hide").textContent = hidden ? "[show controls]" : "[hide controls]";
+  $("#hide").setAttribute("aria-expanded", String(!hidden));
 });
 $("#copy").addEventListener("click", async () => {
   const p = scene.params(),
