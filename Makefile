@@ -39,14 +39,15 @@ check: ## Rebuild in memory and compare with the repo; changes nothing, fails on
 test: ## Run the generator's tests (offline)
 	cd tools && $(BUN) test
 
-typecheck: ## Type-check the generator with TypeScript 7
-	cd tools && $(BUN) run tsc -p tsconfig.json
+typecheck: ## Type-check the generator and the site's copy scripts with TypeScript 7
+	cd tools && $(BUN) run tsc -p tsconfig.json && $(BUN) run tsc -p tsconfig.site.json
 
-lint: ## Lint and format-check the generator; changes nothing
-	cd tools && $(BUN) run biome ci --error-on-warnings .
+# biome.json sits at the repo root, so these lint the whole repo it lists: tools/ and the copy scripts
+lint: ## Lint and format-check the generator and the copy scripts; changes nothing
+	cd tools && $(BUN) run biome ci --error-on-warnings ..
 
-fmt: ## Fix formatting and safe lint fixes in the generator
-	cd tools && $(BUN) run biome check --write .
+fmt: ## Fix formatting and safe lint fixes in the generator and the copy scripts
+	cd tools && $(BUN) run biome check --write ..
 
 dev: ## Build with local "readme" entries allowed, into OUT (never the repo)
 	$(BUN) tools/build.ts --out "$(or $(OUT),$(shell mktemp -d))"

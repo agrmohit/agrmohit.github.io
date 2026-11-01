@@ -1,0 +1,20 @@
+{
+  // type-checks the site's copy button (plain JS with JSDoc types) against the browser's DOM; make typecheck runs it.
+  // It lives here, not beside the scripts, because everything under assets/ goes online
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": [],
+    "module": "Preserve",
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false
+  },
+  "files": ["../assets/js/copy.js", "../assets/js/copy-rules.js"]
+}

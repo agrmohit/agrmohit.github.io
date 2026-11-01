@@ -1,10 +1,21 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": ".." },
-  "files": { "includes": ["**/*.ts", "**/*.json", "**/*.jsonc", "**/*.grit", "!test/fixture"] },
+  "$schema": "./tools/node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "tools/**/*.ts",
+      "tools/**/*.json",
+      "tools/**/*.jsonc",
+      "tools/**/*.grit",
+      "!tools/test/fixture",
+      "assets/js/copy.js",
+      "assets/js/copy-rules.js",
+      "biome.json"
+    ]
+  },
   "formatter": { "indentStyle": "space", "lineWidth": 120 },
   "javascript": { "globals": ["Bun"] },
-  "plugins": ["./biome/no-any-sources.grit"],
+  "plugins": ["./tools/biome/no-any-sources.grit"],
   "linter": {
     "domains": { "types": "all", "project": "all", "test": "recommended" },
     "rules": {

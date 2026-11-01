@@ -102,4 +102,4 @@ Tried and dropped, each because its bytes differed between operating systems: na
 
 ## Strict TypeScript
 
-`tsconfig.json` sets only what goes beyond TypeScript 7's strict defaults. `any` is never allowed. Biome (`biome.json`) bans an explicit `any` and the type assertions that would narrow one. Its plugin `biome/no-any-sources.grit` bans `JSON.parse` and `.json()`, which return `any`, outside `readJson` in `github.ts`. Data from outside (JSON, the manifest) is typed `unknown` and narrowed by checks.
+`tsconfig.json` sets only what goes beyond TypeScript 7's strict defaults. `tsconfig.site.json` checks the site's copy button (`assets/js/copy.js` and `copy-rules.js`), plain JavaScript typed by JSDoc, against the browser's DOM; `test/copy-rules.test.ts` tests its rules. `any` is never allowed. Biome (`biome.json` at the repo root, covering `tools/` and the copy scripts) bans an explicit `any` and the type assertions that would narrow one. Its plugin `biome/no-any-sources.grit` bans `JSON.parse` and `.json()`, which return `any`, outside `readJson` in `github.ts`. Data from outside (JSON, the manifest) is typed `unknown` and narrowed by checks.

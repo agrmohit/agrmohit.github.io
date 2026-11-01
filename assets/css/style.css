@@ -430,6 +430,81 @@ p:hover .emoji-wave {
   overflow-x: auto;
 }
 
+/* copy.js wraps each long code block in a .code-frame holding a "$ copy" button. The frame doesn't scroll and
+   the block inside it does, so the button keeps its corner while a long line scrolls. In a list the frame takes
+   over the block's wide layout above */
+.readme .code-frame {
+  position: relative;
+}
+
+.readme > .wide:has(> .code-frame) {
+  overflow-x: visible;
+}
+
+.readme .code-frame > pre {
+  overflow-x: auto;
+  margin: 0;
+}
+
+.readme li .code-frame {
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  min-width: 100%;
+  max-width: min(100vw - 4rem, 1200px);
+  margin: 2ch 0;
+}
+
+.readme li .code-frame > pre {
+  position: static;
+  transform: none;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.5rem;
+  right: 1ch;
+  font: inherit;
+  font-size: 0.85em;
+  color: var(--text-accent);
+  background: var(--background-primary);
+  border: 0;
+  padding: 0 0.5ch;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.copy-code::before {
+  content: "$ ";
+  color: var(--text-dim);
+}
+
+/* shown on hover and keyboard focus; on touch, .shown after a tap inside the block */
+.code-frame:hover .copy-code,
+.code-frame:focus-within .copy-code,
+.code-frame.shown .copy-code {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.copy-code:hover,
+.copy-code:focus-visible {
+  color: var(--text-secondary);
+}
+
+.copy-code.copied {
+  color: var(--green);
+}
+
+.copy-code.failed {
+  color: var(--red);
+}
+
 .readme img {
   max-width: 100%;
   height: auto;

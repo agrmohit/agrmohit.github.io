@@ -6,6 +6,8 @@
     "module": "Preserve",
     "noEmit": true,
     "allowImportingTsExtensions": true,
+    // tests import the site's copy-rules.js, typed by its JSDoc; ../assets/js/tsconfig.json checks the JS itself
+    "allowJs": true,
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true,

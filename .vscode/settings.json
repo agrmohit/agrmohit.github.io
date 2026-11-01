@@ -1,7 +1,6 @@
 {
-  // the build's TypeScript lives in tools/, with its Biome config and its own node_modules
-  "biome.configurationPath": "tools/biome.json",
-  "[typescript][json][jsonc]": {
+  // Biome runs from tools/node_modules; biome.json at the repo root covers tools/ and the site's copy scripts
+  "[typescript][javascript][json][jsonc]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
