@@ -1,0 +1,14 @@
+{
+  // the build's TypeScript lives in tools/, with its Biome config and its own node_modules
+  "biome.configurationPath": "tools/biome.json",
+  "[typescript][json][jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.biome": "explicit",
+      "source.organizeImports.biome": "explicit"
+    }
+  },
+  // type-check with TypeScript 7, as `make typecheck` does; the editor's bundled TypeScript is older
+  "js/ts.experimental.useTsgo": true
+}
