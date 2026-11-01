@@ -417,6 +417,19 @@ p:hover .emoji-wave {
   margin-block: 0;
 }
 
+/* code and tables inside a list grow the same way: at least the list's width, up to 1200px and the window,
+   centred on the list item. The build wraps only top-level blocks in .wide, so these come bare */
+.readme li pre,
+.readme li table {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  min-width: 100%;
+  max-width: min(100vw - 4rem, 1200px);
+  overflow-x: auto;
+}
+
 .readme img {
   max-width: 100%;
   height: auto;
