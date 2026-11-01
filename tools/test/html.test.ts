@@ -18,26 +18,17 @@ describe("plainText", () => {
     { name: "decimal and hex", input: "it&#39;s &#x2014; done", want: "it's — done" },
     { name: "an apostrophe by name", input: "it&apos;s", want: "it's" },
     { name: "a > inside an attribute", input: '<span title="a > b">c</span> d', want: "c d" },
+    // the case a tag-stripping regex let through (CodeQL js/incomplete-multi-character-sanitization)
+    { name: "an unfinished tag goes", input: "a <script", want: "a" },
+    { name: "an unfinished tag inside a word goes", input: "x<scr<b>ipt>y", want: "xipt>y" },
+    { name: "a script's code is not text", input: "<script>alert(1)</script>ok", want: "ok" },
+    { name: "an unknown entity stays as written", input: "a &bogus; b", want: "a &bogus; b" },
+    { name: "a number past the last character becomes the replacement character", input: "&#x110000;", want: "�" },
+    { name: "spaces at either end go", input: "  <b>x</b>  ", want: "x" },
   ];
 
   it.each(rows)("$name", ({ input, want }) => {
     expect(plainText(input)).toBe(want);
-  });
-
-  interface Refusal {
-    name: string;
-    input: string;
-    message: string;
-  }
-
-  const refusals: readonly Refusal[] = [
-    { name: "an entity it can't decode", input: "a &bogus; b", message: "can't decode &bogus;" },
-    { name: "a number past the last character", input: "&#x110000;", message: "&#x110000; is not a character" },
-    { name: "a huge decimal", input: "&#99999999;", message: "&#99999999; is not a character" },
-  ];
-
-  it.each(refusals)("refuses $name", ({ input, message }) => {
-    expect(failure(() => plainText(input))).toContain(message);
   });
 });
 

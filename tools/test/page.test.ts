@@ -87,7 +87,9 @@ describe("projectPage", () => {
   // the CSP allows the inline script by its hash: an edit to one without the other blocks the script
   it("allows its inline script by the script's own hash", () => {
     const html = projectPage(PAGE);
-    const script = /<script>([^<]*)<\/script>/.exec(html)?.[1] ?? "";
+    // the page's one inline script; the others load by src
+    const start = html.indexOf("<script>") + "<script>".length;
+    const script = html.slice(start, html.indexOf("</script>", start));
     const hash = createHash("sha256").update(script).digest("base64");
     expect(html).toContain(`script-src 'self' 'sha256-${hash}'`);
   });

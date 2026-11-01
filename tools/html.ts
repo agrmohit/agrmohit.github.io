@@ -1,5 +1,8 @@
 // HTML text helpers shared by the project page and the index/sitemap regions.
 
+import type { Root } from "hast";
+import { raw } from "hast-util-raw";
+import { toText } from "hast-util-to-text";
 import { BuildError } from "./errors.ts";
 
 /** `text` safe inside an element or a double-quoted attribute. */
@@ -26,37 +29,12 @@ export function fillSlots(template: string, values: Readonly<Record<string, stri
   return filled;
 }
 
-// the named entities a blurb may use; any other is refused rather than shown as "&name;"
-const ENTITIES = new Map([
-  ["amp", "&"],
-  ["lt", "<"],
-  ["gt", ">"],
-  ["quot", '"'],
-  ["apos", "'"],
-  ["nbsp", "\u00a0"],
-  ["hairsp", "\u200a"],
-  ["thinsp", "\u2009"],
-  ["ensp", "\u2002"],
-  ["emsp", "\u2003"],
-  ["ndash", "\u2013"],
-  ["mdash", "\u2014"],
-  ["hellip", "\u2026"],
-]);
-
-/** Text of an HTML snippet (a blurb): tags dropped, entities decoded, runs of ordinary whitespace folded. */
+/**
+ * Text of an HTML snippet (a blurb): tags dropped, entities decoded, runs of whitespace folded.
+ * Parsed as a browser would (parse5, through hast-util-raw): a regex can't strip tags safely, since an
+ * unfinished tag like "a <script" matches no pattern and would pass through.
+ */
 export function plainText(html: string): string {
-  return html
-    .replace(/<(?:[^>"']|"[^"]*"|'[^']*')*>/g, "") // a tag, even with a > inside a quoted attribute
-    .replace(/[ \t\r\n]+/g, " ")
-    .trim()
-    .replace(/&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi, (entity, name: string) => {
-      if (name.startsWith("#")) {
-        const code = /^#x/i.test(name) ? parseInt(name.slice(2), 16) : parseInt(name.slice(1), 10);
-        if (code > 0x10ffff) throw new BuildError(`${entity} is not a character`);
-        return String.fromCodePoint(code);
-      }
-      const char = ENTITIES.get(name);
-      if (char === undefined) throw new BuildError(`can't decode ${entity}; use the character itself`);
-      return char;
-    });
+  const tree: Root = { type: "root", children: [{ type: "raw", value: html }] };
+  return toText(raw(tree)).trim();
 }
