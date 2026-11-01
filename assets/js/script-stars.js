@@ -1,4 +1,4 @@
-// Show each project's GitHub stars next to its title, if it has any.
+// Show each project's GitHub stars next to its title, once it has more than one.
 // The counts come from workers/github-stars, which refreshes them hourly, so visitors never reach GitHub.
 async function GitHubStars() {
   let stars;
@@ -18,7 +18,8 @@ async function GitHubStars() {
   for (const h3 of document.querySelectorAll(".github-project h3")) {
     const repo = new URL(h3.getAttribute("data-url")).pathname.split("/")[2];
     const count = stars[repo];
-    if (count) {
+    // a single star is usually the author's own
+    if (count > 1) {
       // after the title, which may itself be a link to the project's page, and before the section link
       const stars = document.createElement("span");
       stars.title = `${count} GitHub stars`;
@@ -32,7 +33,7 @@ async function GitHubStars() {
 }
 
 function getMockStars() {
-  const choices = [0, 0, 4, 13, 24, 46, 50, 83, 90, 150];
+  const choices = [0, 1, 1, 4, 13, 24, 46, 50, 83, 150]; // 0 and 1 show nothing
   return choices[Math.floor(Math.random() * choices.length)];
 }
 
