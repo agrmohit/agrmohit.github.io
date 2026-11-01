@@ -2,6 +2,16 @@
   "$schema": "./projects.schema.json",
   "projects": [
     {
+      "repo": "agrmohit/omnivore-epub",
+      "commit": "1c60b701edcd7a30fbc51619a3b3f6315a9f84a6",
+      "title": "omnivore epub",
+      "blurb": "a program to generate <span class=\"explanation\" title=\"ebook\">epub file</span> from articles saved in your <span class=\"explanation\" title=\"a read-it-later app\">omnivore</span> library and optionally send it to your <span class=\"explanation\" title=\"kindle, kobo, pocketbook\">e-reader</span> using email",
+      "license": "MIT",
+      "card": {
+        "subtitle": "program to generate epub file from articles saved in your omnivore library"
+      }
+    },
+    {
       "repo": "agrmohit/beszelscope",
       "tag": "v0.2.0",
       "title": "beszelscope",
@@ -20,16 +30,6 @@
       "license": "MIT",
       "card": {
         "subtitle": "a macOS menu bar app for the Sennheiser Momentum 4"
-      }
-    },
-    {
-      "repo": "agrmohit/omnivore-epub",
-      "commit": "1c60b701edcd7a30fbc51619a3b3f6315a9f84a6",
-      "title": "omnivore epub",
-      "blurb": "a program to generate <span class=\"explanation\" title=\"ebook\">epub file</span> from articles saved in your <span class=\"explanation\" title=\"a read-it-later app\">omnivore</span> library and optionally send it to your <span class=\"explanation\" title=\"kindle, kobo, pocketbook\">e-reader</span> using email",
-      "license": "MIT",
-      "card": {
-        "subtitle": "program to generate epub file from articles saved in your omnivore library"
       }
     },
     {
