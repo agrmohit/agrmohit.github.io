@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agrmohit.com/tools/projects.schema.json",
+  "title": "Projects on agrmohit.com",
+  "description": "Read by tools/build.ts, which checks the same rules in tools/manifest.ts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["projects"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "projects": {
+      "description": "In the order the home page lists them.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "repo": { "type": "string", "pattern": "^[\\w.-]+/[\\w.-]+$", "description": "owner/name on GitHub." },
+          "tag": {
+            "type": "string",
+            "pattern": "^[\\w.+-]+$",
+            "description": "Build the page from the README at this tag: letters, digits and . _ + - (no ..)."
+          },
+          "commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$",
+            "description": "Build the page from the README at this full commit SHA."
+          },
+          "readme": {
+            "type": "string",
+            "description": "A local README, relative to tools/, while a page is being written. Builds only with --out DIR."
+          },
+          "page": { "const": false, "description": "false: list the project without a page." },
+          "path": {
+            "type": "string",
+            "pattern": "^/projects/[a-z0-9-]+/$",
+            "description": "A page this repo already holds; only its card and sitemap entry are built."
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "The page's folder under /projects/. Defaults to the repo's name."
+          },
+          "title": { "type": "string", "description": "The name in the projects list." },
+          "blurb": {
+            "type": "string",
+            "description": "HTML for the projects list; as plain text, the page's description and the card's subtitle."
+          },
+          "license": {
+            "enum": ["MIT", "Apache-2.0", "GPL-3.0-only", "BSD-2-Clause", "MPL-2.0"],
+            "description": "SPDX id, shown in the list."
+          },
+          "card": {
+            "description": "false: no card. An object overrides the card's text.",
+            "oneOf": [
+              { "const": false },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": { "type": "string", "description": "Defaults to the README's first heading." },
+                  "subtitle": {
+                    "type": "string",
+                    "description": "Defaults to the blurb as plain text; a newline breaks the line."
+                  }
+                }
+              }
+            ]
+          },
+          "drop": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true,
+            "description": "README page only: headings of sections to leave out, each with everything under it. A name no heading has fails the build. Sections left empty (a chart hosted elsewhere) go anyway."
+          },
+          "sitemap": { "type": "boolean", "description": "Defaults to true for a project with a page." },
+          "list": { "type": "boolean", "description": "Defaults to true: show it in the home page's projects list." }
+        },
+        "oneOf": [
+          { "required": ["repo", "tag"] },
+          { "required": ["repo", "commit"] },
+          { "required": ["repo", "readme"] },
+          { "required": ["repo", "page"] },
+          { "required": ["path"] }
+        ]
+      }
+    }
+  }
+}

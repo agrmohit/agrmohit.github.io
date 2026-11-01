@@ -1,0 +1,10 @@
+language js
+
+// JSON.parse and Response.json() return `any`, which Biome's own rules cannot follow.
+// Parse JSON only in readJson (github.ts), which returns `unknown` for the caller to narrow.
+or {
+  `JSON.parse($_)`,
+  `$_.json()`
+} as $call where {
+  register_diagnostic(span=$call, message="JSON.parse and .json() return any: parse through readJson, which returns unknown", severity="error")
+}

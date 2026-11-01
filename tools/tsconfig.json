@@ -1,0 +1,24 @@
+{
+  // TypeScript 7 defaults already give strict, ES modules and noUncheckedSideEffectImports; these go further
+  "compilerOptions": {
+    "types": ["bun"],
+    // bun's resolution: .ts imports, package exports, JSON imports with { type: "json" }
+    "module": "Preserve",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    // satori's and resvg's types name DOM types (BufferSource, RequestInfo) that a non-DOM build lacks
+    "skipLibCheck": true
+  }
+}

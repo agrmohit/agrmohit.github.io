@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": ".." },
+  "files": { "includes": ["**/*.ts", "**/*.json", "**/*.jsonc", "**/*.grit", "!test/fixture"] },
+  "formatter": { "indentStyle": "space", "lineWidth": 120 },
+  "javascript": { "globals": ["Bun"] },
+  "plugins": ["./biome/no-any-sources.grit"],
+  "linter": {
+    "domains": { "types": "all", "project": "all", "test": "recommended" },
+    "rules": {
+      "complexity": { "useLiteralKeys": "off" },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "error",
+        "noUnresolvedImports": "error",
+        "useImportExtensions": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noImplicitAnyLet": "error",
+        "noEvolvingTypes": "error",
+        "noUnnecessaryConditions": "error",
+        "noImportCycles": "error",
+        "useAwait": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "noEnum": "error",
+        "noParameterAssign": "error",
+        "useImportType": "error",
+        "useExportType": "error",
+        "useNodejsImportProtocol": "error",
+        "useConsistentTestIt": { "level": "error", "options": { "function": "it" } }
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "useAwaitThenable": "error",
+        "noUnsafeReturn": "error",
+        "noUnsafeTypeAssertion": "error",
+        "noUnsafePlusOperands": "error",
+        "noBaseToString": "error",
+        "useExhaustiveSwitchCases": "error",
+        "useNullishCoalescing": "error"
+      }
+    }
+  }
+}

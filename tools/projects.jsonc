@@ -1,0 +1,55 @@
+{
+  "$schema": "./projects.schema.json",
+  "projects": [
+    {
+      "repo": "agrmohit/beszelscope",
+      "tag": "v0.2.0",
+      "title": "beszelscope",
+      "blurb": "a read-only <span class=\"explanation\" title=\"Model Context Protocol: how AI assistants use tools\">mcp server</span> for <span class=\"explanation\" title=\"a lightweight platform for monitoring your systems\">beszel</span>: lets ai assistants check your servers' health, live metrics and trends",
+      "license": "MIT",
+      "card": {
+        "subtitle": "a read-only MCP server for Beszel"
+      },
+      "drop": ["Table of Contents", "Beszel version", "Development"]
+    },
+    {
+      "repo": "agrmohit/momentum-menu",
+      "tag": "v2.1.2",
+      "title": "momentum menu",
+      "blurb": "a macos menu bar app for the <span class=\"explanation\" title=\"wireless noise-cancelling headphones\">sennheiser momentum 4</span>: battery, noise control, equaliser and paired devices, without the phone app",
+      "license": "MIT",
+      "card": {
+        "subtitle": "a macOS menu bar app for the Sennheiser Momentum 4"
+      }
+    },
+    {
+      "repo": "agrmohit/omnivore-epub",
+      "commit": "1c60b701edcd7a30fbc51619a3b3f6315a9f84a6",
+      "title": "omnivore epub",
+      "blurb": "a program to generate <span class=\"explanation\" title=\"ebook\">epub file</span> from articles saved in your <span class=\"explanation\" title=\"a read-it-later app\">omnivore</span> library and optionally send it to your <span class=\"explanation\" title=\"kindle, kobo, pocketbook\">e-reader</span> using email",
+      "license": "MIT",
+      "card": {
+        "subtitle": "program to generate epub file from articles saved in your omnivore library"
+      }
+    },
+    {
+      "repo": "agrmohit/userscripts",
+      "commit": "a6cf449adda0e36518bf4b48f912d93c7b93f8cf",
+      "title": "userscripts",
+      "blurb": "a collection of <span class=\"explanation\" title=\"JavaScript code that alters the behaviour or appearance of websites\">userscripts</span>",
+      "license": "MIT",
+      "card": {
+        "subtitle": "a collection of userscripts"
+      }
+    },
+    {
+      "path": "/projects/earthrise/",
+      "title": "earthrise",
+      "blurb": "an earthrise from lunar orbit for any date: the earth's phase and size, and <span class=\"explanation\" title=\"HYG database, to magnitude 8\">every star</span>, where they really are",
+      "card": {
+        "title": "Earthrise",
+        "subtitle": "the real sky,\nfrom lunar orbit"
+      }
+    }
+  ]
+}
