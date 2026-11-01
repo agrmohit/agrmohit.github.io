@@ -1,0 +1,60 @@
+# Type-checks, lints and tests the generator on every OS it must agree on, then rebuilds every generated file
+# (tools/build.ts --check) and fails if any differs from what is committed, so a change to an input, a tool or the
+# manifest can't land without its output. On main it runs inside pages.yml, which deploys only once it passes.
+name: Check
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  # the golden fixture's bytes, cards included, must come out the same on each of these
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # bun at the version tools/package.json pins: its zlib writes the PNGs
+      - name: Install bun
+        run: npm install --global "bun@$(jq -r '.packageManager | sub("^bun@"; "")' tools/package.json)"
+
+      # the same make targets as a local run; BUN=bun uses the pinned bun just installed
+      - name: Install the tools' dependencies
+        run: make install BUN=bun
+
+      - name: Type-check the generator
+        run: make typecheck BUN=bun
+
+      - name: Lint the generator
+        run: make lint BUN=bun
+
+      - name: Test the generator
+        run: make test BUN=bun
+
+  check:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install bun
+        run: npm install --global "bun@$(jq -r '.packageManager | sub("^bun@"; "")' tools/package.json)"
+
+      - name: Install the tools' dependencies
+        run: make install BUN=bun
+
+      # READMEs are read from GitHub through gh, which needs a token even for public repos
+      - name: Check the generated files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: make check BUN=bun

@@ -1,4 +1,5 @@
-# Publishes the site to GitHub Pages. Only the paths listed below go online
+# Publishes the site to GitHub Pages once check.yml passes, so generated files that don't match their inputs never
+# go online. Only the paths listed below go online
 name: Pages
 
 on:
@@ -6,18 +7,25 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Read-only by default; the deploy job raises what it needs.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
+  check:
+    uses: ./.github/workflows/check.yml
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -31,6 +39,8 @@ jobs:
         run: |
           mkdir _site
           cp -R index.html 404.html favicon.ico manifest.webmanifest robots.txt sitemap.xml .well-known assets projects _site/
+          # the types of scene.js and stars.js are for the build's TypeScript, not the browser
+          find _site -name '*.d.ts' -delete
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
