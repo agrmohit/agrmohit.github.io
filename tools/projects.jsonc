@@ -33,6 +33,15 @@
       }
     },
     {
+      "path": "/projects/earthrise/",
+      "title": "earthrise",
+      "blurb": "an earthrise from lunar orbit for any date: the earth's phase and size, and <span class=\"explanation\" title=\"HYG database, to magnitude 8\">every star</span>, where they really are",
+      "card": {
+        "title": "Earthrise",
+        "subtitle": "the real sky,\nfrom lunar orbit"
+      }
+    },
+    {
       "repo": "agrmohit/userscripts",
       "commit": "a6cf449adda0e36518bf4b48f912d93c7b93f8cf",
       "title": "userscripts",
@@ -40,15 +49,6 @@
       "license": "MIT",
       "card": {
         "subtitle": "a collection of userscripts"
-      }
-    },
-    {
-      "path": "/projects/earthrise/",
-      "title": "earthrise",
-      "blurb": "an earthrise from lunar orbit for any date: the earth's phase and size, and <span class=\"explanation\" title=\"HYG database, to magnitude 8\">every star</span>, where they really are",
-      "card": {
-        "title": "Earthrise",
-        "subtitle": "the real sky,\nfrom lunar orbit"
       }
     }
   ]
