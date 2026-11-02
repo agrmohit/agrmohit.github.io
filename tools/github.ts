@@ -30,6 +30,8 @@ export interface Source {
   linkRef: string;
   /** How the page names its source: the tag or commit, or "a local README". */
   label: string;
+  /** The pinned commit's author date, as YYYY-MM-DDThh:mm:ssZ; the page's sitemap lastmod. None for a local README. */
+  authored: string | undefined;
   /** A file by its path from the repo root. */
   file(repoPath: string): Promise<Uint8Array>;
 }
@@ -50,18 +52,18 @@ export async function openSource(entry: ReadmeEntry, allowLocal: boolean, gh: Gh
     case "tag": {
       // a branch of the same name must not stand in for a missing tag, so a tag is looked up as a tag
       // manifest.ts keeps a tag to URL-safe characters, so it goes into every URL as it is
-      const sha = shaOf(gh([`repos/${entry.repo}/commits/refs/tags/${ref.name}`]));
-      return githubSource(entry.repo, sha, ref.name, gh);
+      const commit = commitOf(gh([`repos/${entry.repo}/commits/refs/tags/${ref.name}`]));
+      return githubSource(entry.repo, commit, ref.name, gh);
     }
     case "commit": {
-      const sha = shaOf(gh([`repos/${entry.repo}/commits/${ref.sha}`]));
-      if (sha !== ref.sha) throw new BuildError(`${entry.repo}: commit ${ref.sha} resolved to ${sha}`);
-      return githubSource(entry.repo, sha, ref.sha, gh);
+      const commit = commitOf(gh([`repos/${entry.repo}/commits/${ref.sha}`]));
+      if (commit.sha !== ref.sha) throw new BuildError(`${entry.repo}: commit ${ref.sha} resolved to ${commit.sha}`);
+      return githubSource(entry.repo, commit, ref.sha, gh);
     }
   }
 }
 
-function githubSource(repo: string, sha: string, refName: string, gh: GhApi): Source {
+function githubSource(repo: string, { sha, authored }: Commit, refName: string, gh: GhApi): Source {
   const readmePath = stringField(readJson(gh([`repos/${repo}/readme?ref=${sha}`])), "path");
   const raw = (repoPath: string): Uint8Array =>
     gh([
@@ -74,6 +76,7 @@ function githubSource(repo: string, sha: string, refName: string, gh: GhApi): So
     readmeDir: folderOf(readmePath),
     linkRef: refName,
     label: refName,
+    authored,
     file: (repoPath) => Promise.resolve(raw(repoPath)),
   };
 }
@@ -93,6 +96,7 @@ export async function localSource(readmeFile: string): Promise<Source> {
     readmeDir: folderOf(readmePath),
     linkRef: "HEAD",
     label: "a local README",
+    authored: undefined,
     file: (repoPath) => readFile(path.join(root, repoPath)),
   };
 }
@@ -108,10 +112,28 @@ function readJson(bytes: Uint8Array): unknown {
   return parsed;
 }
 
+const fieldOf = (value: unknown, key: string): unknown =>
+  typeof value === "object" && value !== null ? Reflect.get(value, key) : undefined;
+
 function stringField(value: unknown, key: string): string {
-  const field: unknown = typeof value === "object" && value !== null ? Reflect.get(value, key) : undefined;
+  const field = fieldOf(value, key);
   if (typeof field !== "string") throw new BuildError(`gh: expected "${key}" in its answer`);
   return field;
 }
 
-const shaOf = (bytes: Uint8Array): string => stringField(readJson(bytes), "sha");
+interface Commit {
+  sha: string;
+  /** YYYY-MM-DDThh:mm:ssZ, as GitHub gives it. */
+  authored: string;
+}
+
+/** The sha and author date in gh's answer to `repos/<repo>/commits/<ref>`. */
+function commitOf(bytes: Uint8Array): Commit {
+  const json = readJson(bytes);
+  const sha = stringField(json, "sha");
+  const authored = stringField(fieldOf(fieldOf(json, "commit"), "author"), "date");
+  // the sitemap copies the date as it is, so any other shape must fail here rather than reach it
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(authored))
+    throw new BuildError(`gh: expected a UTC author date like 2026-01-02T03:04:05Z, got "${authored}"`);
+  return { sha, authored };
+}

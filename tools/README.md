@@ -8,7 +8,7 @@
 | `projects/<slug>/card.png`, link previews | `images.ts` | the title and subtitle, over the earthrise sky |
 | `assets/img/contact-card.png`, `banner.png`, `banner-linkedin.png` | `images.ts` | the layouts in `CONTACT` |
 | `assets/img/icon-*.png`, `apple-touch-icon.png`, `shortcut-earthrise-96.png` | `images.ts` | `assets/img/favicon.svg` and `icons/*.svg` |
-| the projects list in `index.html`, project URLs in `sitemap.xml` | `site.ts` | `projects.jsonc`, between `projects:start` and `projects:end` |
+| the projects list in `index.html`, project URLs in `sitemap.xml` | `site.ts` | `projects.jsonc`, between `projects:start` and `projects:end`; a README page's `lastmod` is its pinned commit's author date |
 
 The install-dialog screenshots are the exception: `share-images/build.sh screenshots` takes them by hand.
 

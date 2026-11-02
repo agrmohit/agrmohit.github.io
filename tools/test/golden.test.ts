@@ -42,7 +42,7 @@ const LONG_TITLE: LocalEntry = {
 };
 
 const made: Files = new Map();
-const name = await addReadmePage(made, FIXTURE, true);
+const { name } = await addReadmePage(made, FIXTURE, true);
 await addCard(made, FIXTURE, name);
 await addCard(made, LONG_TITLE, LONG_TITLE.card === false ? "" : LONG_TITLE.card.title);
 

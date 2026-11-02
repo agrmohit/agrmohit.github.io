@@ -10,6 +10,11 @@ import { asyncFailure } from "./failure.ts";
 
 const SHA = "1".repeat(40);
 const OTHER = "2".repeat(40);
+const AUTHORED = "2026-01-02T03:04:05Z";
+
+/** gh's answer to `repos/<repo>/commits/<ref>`: the commit's sha and author date. */
+const commitJson = (sha: string, authored: string = AUTHORED): string =>
+  JSON.stringify({ sha, commit: { author: { date: authored } } });
 
 /** A gh that answers each request path from `answers` and fails on any other, as gh does on a 404. */
 function fakeGh(answers: Record<string, string>): GhApi {
@@ -47,47 +52,53 @@ describe("openSource from GitHub", () => {
     name: string;
     ref: ReadmeEntry["ref"];
     answers: Record<string, string>;
-    want: { markdown: string; readmeDir: string; linkRef: string; label: string };
+    want: { markdown: string; readmeDir: string; linkRef: string; label: string; authored: string };
   }
 
   const rows: readonly Row[] = [
     {
       name: "a tag, looked up as a tag",
       ref: { kind: "tag", name: "v1.0.0" },
-      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1.0.0": JSON.stringify({ sha: SHA }) },
-      want: { markdown: "# App", readmeDir: "", linkRef: "v1.0.0", label: "v1.0.0" },
+      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1.0.0": commitJson(SHA) },
+      want: { markdown: "# App", readmeDir: "", linkRef: "v1.0.0", label: "v1.0.0", authored: AUTHORED },
     },
     {
       name: "a tag with a plus, as it is",
       ref: { kind: "tag", name: "v1.0+b" },
-      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1.0+b": JSON.stringify({ sha: SHA }) },
-      want: { markdown: "# App", readmeDir: "", linkRef: "v1.0+b", label: "v1.0+b" },
+      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1.0+b": commitJson(SHA) },
+      want: { markdown: "# App", readmeDir: "", linkRef: "v1.0+b", label: "v1.0+b", authored: AUTHORED },
     },
     {
       name: "a commit that is itself",
       ref: { kind: "commit", sha: SHA },
-      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: SHA }) },
-      want: { markdown: "# App", readmeDir: "", linkRef: SHA, label: SHA },
+      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: commitJson(SHA) },
+      want: { markdown: "# App", readmeDir: "", linkRef: SHA, label: SHA, authored: AUTHORED },
+    },
+    {
+      name: "the commit's own author date, as GitHub gives it",
+      ref: { kind: "commit", sha: SHA },
+      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: commitJson(SHA, "1999-12-31T23:59:59Z") },
+      want: { markdown: "# App", readmeDir: "", linkRef: SHA, label: SHA, authored: "1999-12-31T23:59:59Z" },
     },
     {
       name: "a README in a folder",
       ref: { kind: "commit", sha: SHA },
       answers: {
-        [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: SHA }),
+        [`repos/o/app/commits/${SHA}`]: commitJson(SHA),
         [`repos/o/app/readme?ref=${SHA}`]: JSON.stringify({ path: "docs/README.md" }),
         [`repos/o/app/contents/docs/README.md?ref=${SHA}`]: "# Docs",
       },
-      want: { markdown: "# Docs", readmeDir: "docs", linkRef: SHA, label: SHA },
+      want: { markdown: "# Docs", readmeDir: "docs", linkRef: SHA, label: SHA, authored: AUTHORED },
     },
   ];
 
   it.each(rows)("$name", async ({ ref, answers, want }) => {
-    const { markdown, readmeDir, linkRef, label } = await openSource(entry(ref), false, fakeGh(answers));
-    expect({ markdown, readmeDir, linkRef, label }).toEqual(want);
+    const { markdown, readmeDir, linkRef, label, authored } = await openSource(entry(ref), false, fakeGh(answers));
+    expect({ markdown, readmeDir, linkRef, label, authored }).toEqual(want);
   });
 
   it("reads a file beside the README at the same commit, its path encoded", async () => {
-    const answers = { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: SHA }) };
+    const answers = { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: commitJson(SHA) };
     const source = await openSource(entry({ kind: "commit", sha: SHA }), false, fakeGh(answers));
     expect(new TextDecoder().decode(await source.file("docs/my shot.png"))).toBe("png");
   });
@@ -104,13 +115,13 @@ describe("openSource from GitHub", () => {
     {
       name: "a missing tag, even with a branch of its name",
       ref: { kind: "tag", name: "v1.0.0" },
-      answers: { ...AT_SHA, "repos/o/app/commits/v1.0.0": JSON.stringify({ sha: SHA }) },
+      answers: { ...AT_SHA, "repos/o/app/commits/v1.0.0": commitJson(SHA) },
       message: "refs/tags/v1.0.0: HTTP 404",
     },
     {
       name: "a commit that resolves to another",
       ref: { kind: "commit", sha: SHA },
-      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: OTHER }) },
+      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: commitJson(OTHER) },
       message: `commit ${SHA} resolved to ${OTHER}`,
     },
     {
@@ -122,7 +133,7 @@ describe("openSource from GitHub", () => {
     {
       name: "a repo with no README",
       ref: { kind: "commit", sha: SHA },
-      answers: { [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: SHA }) },
+      answers: { [`repos/o/app/commits/${SHA}`]: commitJson(SHA) },
       message: "readme?ref=",
     },
     {
@@ -130,6 +141,36 @@ describe("openSource from GitHub", () => {
       ref: { kind: "tag", name: "v1" },
       answers: { "repos/o/app/commits/refs/tags/v1": JSON.stringify({ message: "?" }) },
       message: 'expected "sha"',
+    },
+    {
+      name: "an answer without an author date",
+      ref: { kind: "commit", sha: SHA },
+      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: JSON.stringify({ sha: SHA, commit: {} }) },
+      message: 'expected "date"',
+    },
+    {
+      name: "an author date with an offset, not UTC",
+      ref: { kind: "commit", sha: SHA },
+      answers: { ...AT_SHA, [`repos/o/app/commits/${SHA}`]: commitJson(SHA, "2026-01-02T08:34:05+05:30") },
+      message: 'got "2026-01-02T08:34:05+05:30"',
+    },
+    {
+      name: "an author date without a time",
+      ref: { kind: "tag", name: "v1" },
+      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1": commitJson(SHA, "2026-01-02") },
+      message: 'got "2026-01-02"',
+    },
+    {
+      name: "an author date with milliseconds",
+      ref: { kind: "tag", name: "v1" },
+      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1": commitJson(SHA, "2026-01-02T03:04:05.000Z") },
+      message: 'got "2026-01-02T03:04:05.000Z"',
+    },
+    {
+      name: "an author date with text after it",
+      ref: { kind: "tag", name: "v1" },
+      answers: { ...AT_SHA, "repos/o/app/commits/refs/tags/v1": commitJson(SHA, "2026-01-02T03:04:05Z<x>") },
+      message: 'got "2026-01-02T03:04:05Z<x>"',
     },
     {
       name: "a local readme when building into the repo",
@@ -211,9 +252,9 @@ describe("localSource", () => {
     expect({ markdown: source.markdown, readmeDir: source.readmeDir, other: otherText }).toEqual(want);
   });
 
-  it("is labelled as local and links to HEAD", async () => {
+  it("is labelled as local, links to HEAD and has no date", async () => {
     const root = await tree("labels", { "README.md": "# L" }, true);
-    const { linkRef, label } = await localSource(path.join(root, "README.md"));
-    expect({ linkRef, label }).toEqual({ linkRef: "HEAD", label: "a local README" });
+    const { linkRef, label, authored } = await localSource(path.join(root, "README.md"));
+    expect({ linkRef, label, authored }).toEqual({ linkRef: "HEAD", label: "a local README", authored: undefined });
   });
 });

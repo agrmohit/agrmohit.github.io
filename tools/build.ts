@@ -98,10 +98,13 @@ function requirePinnedBun(): void {
 /** Every generated file. `allowLocal` lets entries with a local "readme" build; never into the repo. */
 async function siteFiles(entries: readonly Entry[], allowLocal: boolean): Promise<Files> {
   const files: Files = new Map();
+  /** Each README page's sitemap lastmod, by its path. */
+  const lastmods = new Map<string, string>();
   for (const entry of entries) {
     if (entry.kind === "readme") {
-      const name = await addReadmePage(files, entry, allowLocal);
-      if (entry.card !== false) await addCard(files, entry, name);
+      const page = await addReadmePage(files, entry, allowLocal);
+      if (page.authored !== undefined) lastmods.set(entry.path, page.authored);
+      if (entry.card !== false) await addCard(files, entry, page.name);
     }
     if (entry.kind === "local" && entry.card !== false) await addCard(files, entry, entry.card.title);
   }
@@ -110,7 +113,7 @@ async function siteFiles(entries: readonly Entry[], allowLocal: boolean): Promis
   files.set("assets/img/banner.png", await contactCard("banner"));
   files.set("assets/img/banner-linkedin.png", await contactCard("linkedin"));
   files.set("index.html", utf8(withProjectList(await readText("index.html"), entries)));
-  files.set("sitemap.xml", utf8(withSitemap(await readText("sitemap.xml"), entries)));
+  files.set("sitemap.xml", utf8(withSitemap(await readText("sitemap.xml"), entries, lastmods)));
   files.set(GENERATED, utf8(generatedList([...files.keys()])));
   return files;
 }
@@ -122,8 +125,12 @@ export function generatedList(repoPaths: readonly string[]): string {
   return `${[...new Set([...whole, GENERATED])].sort(byCodeUnit).join("\n")}\n`;
 }
 
-/** Adds the entry's page and the images it loads; returns the name its card shows. */
-export async function addReadmePage(files: Files, entry: ReadmeEntry, allowLocal: boolean): Promise<string> {
+/** Adds the entry's page and the images it loads; returns the name its card shows and its source's author date. */
+export async function addReadmePage(
+  files: Files,
+  entry: ReadmeEntry,
+  allowLocal: boolean,
+): Promise<{ name: string; authored: string | undefined }> {
   const source = await openSource(entry, allowLocal);
   const readme = await renderReadme(source.markdown, {
     repo: entry.repo,
@@ -147,7 +154,7 @@ export async function addReadmePage(files: Files, entry: ReadmeEntry, allowLocal
     card: card === undefined ? undefined : { subtitle: cardSubtitle(entry) },
   });
   files.set(`${folder}/index.html`, utf8(page));
-  return name;
+  return { name, authored: source.authored };
 }
 
 /** Adds the entry's link-preview card, which shows `name` over the page's URL. */
