@@ -43,6 +43,21 @@ export async function svgToPalettePng(svg: string, width: number): Promise<Uint8
 
 const SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
+/**
+ * A PNG's size in pixels, or undefined if `bytes` is not a PNG. `name` only labels the error.
+ * IHDR is always the first chunk: width and height are u32 big-endian at bytes 16 and 20.
+ */
+export function pngSize(bytes: Uint8Array, name: string): { width: number; height: number } | undefined {
+  if (bytes.length < SIGNATURE.length || !SIGNATURE.every((byte, i) => bytes[i] === byte)) return undefined;
+  const type = new TextDecoder().decode(bytes.subarray(12, 16));
+  if (bytes.length < 24 || type !== "IHDR") throw new BuildError(`${name}: a PNG with no IHDR chunk first`);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const width = view.getUint32(16);
+  const height = view.getUint32(20);
+  if (width === 0 || height === 0) throw new BuildError(`${name}: a PNG ${width} x ${height} pixels`);
+  return { width, height };
+}
+
 /** An 8-bit palette PNG. `palette`: 3 bytes a colour, at most 256 colours; `indices`: one byte a pixel, row by row. */
 export function palettePng(width: number, height: number, palette: Uint8Array, indices: Uint8Array): Uint8Array {
   if (width < 1 || height < 1) throw new BuildError(`png: an image must be at least 1 x 1, not ${width} x ${height}`);
