@@ -151,7 +151,7 @@ export async function addReadmePage(
   });
   const folder = `projects/${entry.slug}`;
   for (const image of readme.images) files.set(`${folder}/${image}`, await file(image));
-  for (const [image, bytes] of readme.webps) files.set(`${folder}/${image}`, bytes);
+  for (const [image, bytes] of readme.encoded) files.set(`${folder}/${image}`, bytes);
 
   const card = entry.card === false ? undefined : entry.card;
   const name = card?.title ?? readme.title ?? entry.title ?? entry.slug;

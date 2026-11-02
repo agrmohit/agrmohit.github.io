@@ -20,7 +20,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { EXIT, SKIP, visit } from "unist-util-visit";
 import { BuildError } from "./errors.ts";
-import { rasterOf, toWebp } from "./raster.ts";
+import { rasterOf, toJxl, toWebp } from "./raster.ts";
 import { byCodeUnit } from "./sort.ts";
 
 export interface ReadmeOptions {
@@ -34,14 +34,14 @@ export interface ReadmeOptions {
 export interface RenderedReadme {
   html: string;
   images: string[]; // repo paths of local media, sorted; the page copies each to the same path
-  webps: Map<string, Uint8Array>; // WebP copies of PNG and JPEG images, by the repo path the page loads
+  encoded: Map<string, Uint8Array>; // WebP and JPEG XL copies of PNG and JPEG images, by repo path
   title: string | undefined; // the first h1's text
 }
 
 /** The README as page HTML, with the media files it loads and its title. */
 export async function renderReadme(markdown: string, options: ReadmeOptions): Promise<RenderedReadme> {
-  const webps = new Map<string, Uint8Array>();
-  const converted = new Set<Element>(); // the <img>s now showing one of `webps`
+  const encoded = new Map<string, Uint8Array>();
+  const converted = new Set<Element>(); // the <img>s and <source>s now loading one of `encoded`
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -53,7 +53,7 @@ export async function renderReadme(markdown: string, options: ReadmeOptions): Pr
     .use(onTree((tree) => localiseMedia(tree, options.readmeDir)))
     // after localiseMedia: it reads repo paths
     .use(() => async (tree: Root): Promise<undefined> => {
-      await shrinkImages(tree, options.file, webps, converted);
+      await shrinkImages(tree, options.file, encoded, converted);
     })
     .use(onTree((tree) => linkToGitHub(tree, options)))
     .use(onTree(pruneEmpty)) // after localiseMedia: a badge's link is empty only once its image went
@@ -65,8 +65,8 @@ export async function renderReadme(markdown: string, options: ReadmeOptions): Pr
 
   const tree = await processor.run(processor.parse(markdown));
   const images = [...mediaFiles(tree, converted)].sort(byCodeUnit);
-  checkCollisions([...images, ...webps.keys()]);
-  return { html: `${processor.stringify(tree).trim()}\n`, images, webps, title: firstH1Text(tree) };
+  checkCollisions([...images, ...encoded.keys()]);
+  return { html: `${processor.stringify(tree).trim()}\n`, images, encoded, title: firstH1Text(tree) };
 }
 
 let highlight: ReturnType<typeof rehypeStarryNight> | undefined;
@@ -237,24 +237,26 @@ function localiseMedia(tree: Root, readmeDir: string): void {
 }
 
 /**
- * Sizes each local <img> from its file, and swaps a PNG or JPEG for a WebP twice its shown width.
- * A size the README set wins; a missing one follows the file's shape, so the page holds the space while the
- * file loads. 2x is sharp on a phone. A file is never enlarged; a width that is not pixels ("50%") keeps its
- * own. An <img> with a srcset keeps its files, as the browser would pick from the srcset anyway.
+ * Sizes each local <img> from its file, and swaps a PNG or JPEG for a WebP of the same pixels, with a JPEG XL
+ * <source> before it for browsers that show one. A size the README set wins; a missing one follows the
+ * file's shape, so the page holds the space while the file loads. An <img> with a srcset keeps its files.
  */
 async function shrinkImages(
   tree: Root,
   file: ReadmeOptions["file"],
-  webps: Map<string, Uint8Array>,
+  encoded: Map<string, Uint8Array>,
   converted: Set<Element>,
 ): Promise<void> {
   const images: Element[] = [];
-  visit(tree, "element", (element) => {
-    if (element.tagName === "img") images.push(element);
+  const parents = new Map<Element, Root | Element>();
+  visit(tree, "element", (element, _index, parent) => {
+    if (element.tagName !== "img" || parent === undefined) return;
+    images.push(element);
+    parents.set(element, parent);
   });
 
-  // per source file: its bytes, the widest it is wanted at, and the <img>s that show it
-  const wanted = new Map<string, { bytes: Uint8Array; width: number; images: Element[] }>();
+  // per source file: its bytes, and the <img>s that show it
+  const wanted = new Map<string, { bytes: Uint8Array; images: Element[] }>();
   for (const image of images) {
     const { src, srcSet, width, height } = image.properties;
     if (typeof src !== "string" || src.startsWith("data:")) continue;
@@ -273,31 +275,46 @@ async function shrinkImages(
       image.properties.width = Math.round((height * raster.width) / raster.height);
 
     if (srcSet !== undefined || (raster.format !== "png" && raster.format !== "jpeg")) continue;
-    const shown = image.properties.width;
-    const target = typeof shown === "number" ? Math.min(2 * shown, raster.width) : raster.width;
     const entry = wanted.get(name);
-    if (entry === undefined) wanted.set(name, { bytes, width: target, images: [image] });
-    else {
-      entry.width = Math.max(entry.width, target);
-      entry.images.push(image);
-    }
+    if (entry === undefined) wanted.set(name, { bytes, images: [image] });
+    else entry.images.push(image);
   }
 
-  const sources = new Map<string, string>(); // WebP path to the file it came from
-  for (const [name, { bytes, width, images: showing }] of wanted) {
-    const webp = `${name.replace(/\.[^./]+$/, "")}.webp`;
+  const sources = new Map<string, string>(); // made path to the file it came from
+  for (const [name, { bytes, images: showing }] of wanted) {
+    const stem = name.replace(/\.[^./]+$/, "");
+    const [webp, jxl] = [`${stem}.webp`, `${stem}.jxl`];
     const other = sources.get(webp);
     if (other !== undefined) throw new BuildError(`images ${other} and ${name} would both be ${webp}`);
     sources.set(webp, name);
-    webps.set(webp, await toWebp(bytes, width, name));
+    encoded.set(webp, await toWebp(bytes, name));
+    encoded.set(jxl, await toJxl(bytes, name));
     for (const image of showing) {
       image.properties.src = encodeURI(webp);
       converted.add(image);
+      const source: Element = {
+        type: "element",
+        tagName: "source",
+        properties: { type: "image/jxl", srcSet: encodeURI(jxl) },
+        children: [],
+      };
+      converted.add(source);
+      addSource(image, source, parents.get(image));
     }
   }
 }
 
-/** The repo paths of the local files the page loads as they are: all but the WebPs of `converted`. */
+/** Puts `source` just before `image`, in its <picture>, or in a new <picture> around it. */
+function addSource(image: Element, source: Element, parent: Root | Element | undefined): void {
+  assert(parent !== undefined, "every <img> was found under a parent");
+  const at = parent.children.indexOf(image);
+  assert(at >= 0, "an <img> is among its parent's children");
+  // a <source> the README wrote, as for dark mode, stays first: the browser takes the first that matches
+  if (parent.type === "element" && parent.tagName === "picture") parent.children.splice(at, 0, source);
+  else parent.children[at] = { type: "element", tagName: "picture", properties: {}, children: [source, image] };
+}
+
+/** The repo paths of the local files the page loads as they are: all but the made ones of `converted`. */
 function mediaFiles(tree: Root, converted: ReadonlySet<Element>): Set<string> {
   const files = new Set<string>();
   visit(tree, "element", (element) => {
@@ -404,12 +421,12 @@ function withMinWidth(svg: string, px: number): string {
   return sized + svg.slice(root.length);
 }
 
+const isImage = (node: Node): boolean => isElement(node, "img") || isElement(node, "picture");
+
 // an image, or a link around nothing but images
 const isPicture = (node: Node): boolean =>
-  isElement(node, "img") ||
-  (isElement(node, "a") &&
-    node.children.some((c) => isElement(c, "img")) &&
-    node.children.every((c) => isBlank(c) || isElement(c, "img")));
+  isImage(node) ||
+  (isElement(node, "a") && node.children.some(isImage) && node.children.every((c) => isBlank(c) || isImage(c)));
 
 /** Tables, code, diagrams and image-only paragraphs, which the CSS lets grow past the text column. */
 const isWide = (node: RootContent): node is Element =>

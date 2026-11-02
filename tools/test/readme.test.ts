@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import decodeJxl from "@jsquash/jxl/decode.js";
 import { palettePng } from "../png.ts";
 import { type ReadmeOptions, renderReadme, repoPath } from "../readme.ts";
 import { asyncFailure, failure } from "./failure.ts";
@@ -292,8 +293,16 @@ const FILES = new Map<string, Uint8Array>([
   ["wide.webp", await new Bun.Image(widePng).webp().bytes()],
   ["odd.png", palettePng(30, 7, new Uint8Array(3), new Uint8Array(30 * 7))],
   ["text.png", new TextEncoder().encode("not an image")],
+  ["wide.jxl", new TextEncoder().encode("a JPEG XL Bun.Image cannot read")],
   ["broken.jpg", new Uint8Array([0xff, 0xd8, 0xff, 0xe0])],
 ]);
+/** A made file's format and size: Bun.Image reads WebP; JPEG XL needs the encoder's own decoder. */
+async function madeImage(path: string, bytes: Uint8Array): Promise<{ format: string; width: number }> {
+  if (!path.endsWith(".jxl")) return await new Bun.Image(bytes).metadata();
+  const { width } = await decodeJxl(bytes.slice().buffer);
+  return { format: "jxl", width };
+}
+
 // a path not in FILES fails the row, so a wrongly spelled or escaped path cannot pass as "no image"
 const file = (repoPath: string) => {
   const bytes = FILES.get(repoPath);
@@ -384,8 +393,10 @@ describe("what the page needs", () => {
     readmeDir?: string;
     /** The <img> tags the HTML must hold, in order. */
     imgs: string[];
-    /** The WebP files the page gets, by path, with each one's width in pixels. */
-    webps: Record<string, number>;
+    /** The <source> tags the HTML must hold, in order. */
+    sources: string[];
+    /** The files the build makes (WebP and JPEG XL), by path, with each one's width in pixels: the file's own. */
+    made: Record<string, number>;
     /** The files the page copies as they are. */
     copied: string[];
   }
@@ -396,108 +407,123 @@ describe("what the page needs", () => {
       name: "a width alone gets the height that keeps the shape",
       markdown: '<img src="wide.png" alt="w" width="10">',
       imgs: ['<img src="wide.webp" alt="w" width="10" height="5">'],
-      webps: { "wide.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
       name: "a height alone gets the width that keeps the shape",
       markdown: '<img src="wide.png" alt="w" height="10">',
       imgs: ['<img src="wide.webp" alt="w" height="10" width="20">'],
-      webps: { "wide.webp": 40 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
       name: "no size gets the file's own",
       markdown: "![w](wide.png)",
       imgs: ['<img src="wide.webp" alt="w" width="40" height="20">'],
-      webps: { "wide.webp": 40 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
       name: "a computed size rounds to whole pixels",
       markdown: '<img src="odd.png" alt="o" width="10">',
       imgs: ['<img src="odd.webp" alt="o" width="10" height="2">'],
-      webps: { "odd.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="odd.jxl">'],
+      made: { "odd.webp": 30, "odd.jxl": 30 },
       copied: [],
     },
     {
       name: "both sizes stay as written, even off the file's shape",
       markdown: '<img src="wide.png" alt="w" width="10" height="10">',
       imgs: ['<img src="wide.webp" alt="w" width="10" height="10">'],
-      webps: { "wide.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
-      name: "a percentage width stays, with no height, at the file's own width",
+      name: "a percentage width stays, with no height",
       markdown: '<img src="wide.png" alt="w" width="50%">',
       imgs: ['<img src="wide.webp" alt="w" width="50%">'],
-      webps: { "wide.webp": 40 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
-      name: "twice the width, but never wider than the file",
+      name: "a width past the file's keeps the file's pixels",
       markdown: '<img src="wide.png" alt="w" width="30">',
       imgs: ['<img src="wide.webp" alt="w" width="30" height="15">'],
-      webps: { "wide.webp": 40 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
       name: "a JPEG becomes a WebP too",
       markdown: '<img src="wide.jpg" alt="j" width="10">',
       imgs: ['<img src="wide.webp" alt="j" width="10" height="5">'],
-      webps: { "wide.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
       name: "a WebP is sized and copied as it is",
       markdown: '<img src="wide.webp" alt="w" width="10">',
       imgs: ['<img src="wide.webp" alt="w" width="10" height="5">'],
-      webps: {},
+      sources: [],
+      made: {},
       copied: ["wide.webp"],
     },
     {
       name: "a file that is no image stays as written",
       markdown: '<img src="text.png" alt="t" width="10">',
       imgs: ['<img src="text.png" alt="t" width="10">'],
-      webps: {},
+      sources: [],
+      made: {},
       copied: ["text.png"],
     },
     {
       name: "a data image stays as written",
       markdown: '<img src="data:image/png;base64,AA==" alt="d" width="10">',
       imgs: ['<img src="data:image/png;base64,AA==" alt="d" width="10">'],
-      webps: {},
+      sources: [],
+      made: {},
       copied: [],
     },
     {
       name: "an <img> with a srcset is sized but keeps its files",
       markdown: '<img src="wide.png" srcset="wide.png 1x" alt="w" width="10">',
       imgs: ['<img src="wide.png" srcset="wide.png 1x" alt="w" width="10" height="5">'],
-      webps: {},
+      sources: [],
+      made: {},
       copied: ["wide.png"],
     },
     {
       name: "the <img> in a <picture> becomes a WebP; its <source> keeps the PNG",
       markdown: '<picture><source srcset="wide.png"><img src="wide.png" alt="w" width="8"></picture>',
       imgs: ['<img src="wide.webp" alt="w" width="8" height="4">'],
-      webps: { "wide.webp": 16 },
+      sources: ['<source srcset="wide.png">', '<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: ["wide.png"],
     },
     {
       name: "a video's poster is copied as it is",
       markdown: '<video src="v.mp4" poster="wide.png"></video>',
       imgs: [],
-      webps: {},
+      sources: [],
+      made: {},
       copied: ["v.mp4", "wide.png"],
     },
     {
-      name: "one file shown twice is one WebP, wide enough for the wider",
+      name: "one file shown twice is one WebP and one JPEG XL",
       markdown: '<img src="wide.png" alt="a" width="10"> <img src="wide.png" alt="b" width="15">',
       imgs: [
         '<img src="wide.webp" alt="a" width="10" height="5">',
         '<img src="wide.webp" alt="b" width="15" height="8">',
       ],
-      webps: { "wide.webp": 30 },
+      sources: ['<source type="image/jxl" srcset="wide.jxl">', '<source type="image/jxl" srcset="wide.jxl">'],
+      made: { "wide.webp": 40, "wide.jxl": 40 },
       copied: [],
     },
     {
@@ -505,21 +531,24 @@ describe("what the page needs", () => {
       markdown: '<img src="img/wide.png" alt="w" width="10">',
       readmeDir: "pkg",
       imgs: ['<img src="pkg/img/wide.webp" alt="w" width="10" height="5">'],
-      webps: { "pkg/img/wide.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="pkg/img/wide.jxl">'],
+      made: { "pkg/img/wide.webp": 40, "pkg/img/wide.jxl": 40 },
       copied: [],
     },
     {
       name: "a srcset file with a space is copied by its real name",
       markdown: '<picture><source srcset="my%20shot.png 1x"><img src="text.png" alt="t"></picture>',
       imgs: ['<img src="text.png" alt="t">'],
-      webps: {},
+      sources: ['<source srcset="my%20shot.png 1x">'],
+      made: {},
       copied: ["my shot.png", "text.png"],
     },
     {
       name: "a name with a space is read by its real name",
       markdown: '<img src="my shot.png" alt="s" width="10">',
       imgs: ['<img src="my%20shot.webp" alt="s" width="10" height="5">'],
-      webps: { "my shot.webp": 20 },
+      sources: ['<source type="image/jxl" srcset="my%20shot.jxl">'],
+      made: { "my shot.webp": 40, "my shot.jxl": 40 },
       copied: [],
     },
   ];
@@ -529,15 +558,32 @@ describe("what the page needs", () => {
     expect([...html.matchAll(/<img\b[^>]*>/g)].map((match) => match[0])).toEqual(imgs);
   });
 
-  it.each(mediaRows)("webps written: $name", async ({ markdown, readmeDir = "", webps }) => {
-    const { webps: written } = await render(markdown, { readmeDir, file });
+  it.each(mediaRows)("source tags: $name", async ({ markdown, readmeDir = "", sources }) => {
+    const { html } = await render(markdown, { readmeDir, file });
+    expect([...html.matchAll(/<source\b[^>]*>/g)].map((match) => match[0])).toEqual(sources);
+  });
+
+  it.each(mediaRows)("files made: $name", async ({ markdown, readmeDir = "", made }) => {
+    const { encoded } = await render(markdown, { readmeDir, file });
     const widths: Record<string, number> = {};
-    for (const [path, bytes] of written) {
-      const { format, width } = await new Bun.Image(bytes).metadata();
-      expect(format).toBe("webp");
-      widths[path] = width;
+    for (const [path, bytes] of encoded) {
+      const { format, width } = await madeImage(path, bytes);
+      widths[path] = format === path.slice(path.lastIndexOf(".") + 1) ? width : -1; // -1: not what its name says
     }
-    expect(widths).toEqual(webps);
+    expect(widths).toEqual(made);
+  });
+
+  it("a README's own <picture> gets the JPEG XL after its sources, before its <img>", async () => {
+    const markdown =
+      '<picture><source media="(prefers-color-scheme: dark)" srcset="odd.png"><img src="wide.png" alt="w"></picture>';
+    expect((await render(markdown, { file })).html).toContain(
+      '<picture><source media="(prefers-color-scheme: dark)" srcset="odd.png"><source type="image/jxl" srcset="wide.jxl"><img src="wide.webp"',
+    );
+  });
+
+  it("an image-only paragraph stays wide once its image is a <picture>", async () => {
+    const { html } = await render("![w](wide.png)", { file });
+    expect(html).toStartWith('<div class="wide"><p><picture><source type="image/jxl" srcset="wide.jxl"><img');
   });
 
   it.each(mediaRows)("files copied: $name", async ({ markdown, readmeDir = "", copied }) => {
@@ -561,6 +607,11 @@ describe("what the page needs", () => {
       name: "a PNG and a JPEG that would make one WebP",
       markdown: '<img src="wide.png" alt="p"> <img src="wide.jpg" alt="j">',
       message: "images wide.png and wide.jpg would both be wide.webp",
+    },
+    {
+      name: "a README JPEG XL that a made one would overwrite",
+      markdown: '<img src="wide.png" alt="p"> <img src="wide.jxl" alt="x">',
+      message: "two images would both be wide.jxl",
     },
   ];
 
