@@ -39,10 +39,11 @@ jobs:
       - name: Test the generator
         run: make test BUN=bun
 
-  # the main ruleset requires only this job; it runs after a failed test because a skipped required check counts as passed
+  # the main ruleset requires only this job; it runs even after a failed or cancelled test because a skipped required
+  # check counts as passed
   check:
     needs: test
-    if: ${{ !cancelled() }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - name: Require every test to pass
