@@ -55,27 +55,40 @@ const submission = (urls: readonly string[]): { host: string; key: string; urlLi
   urlList: urls,
 });
 
+/** A response with its body already read. */
+interface Reply {
+  status: number;
+  ok: boolean;
+  body: string;
+}
+
+/** Reads the whole body inside the attempt, so a connection that drops mid-body is retried like any other. */
+async function download(request: Promise<Response>): Promise<Reply> {
+  const response = await request;
+  return { status: response.status, ok: response.ok, body: await response.text() };
+}
+
 /**
  * Calls `attempt`, retrying after each of RETRY_DELAYS_MS while it throws or `retryable` accepts its status.
  * A deploy has just finished when this runs, so GitHub Pages, Cloudflare or IndexNow may briefly fail.
  */
 async function withRetry(
   label: string,
-  attempt: () => Promise<Response>,
+  attempt: () => Promise<Reply>,
   retryable: (status: number) => boolean,
   sleep: Sleep,
-): Promise<Response> {
+): Promise<Reply> {
   for (const delay of RETRY_DELAYS_MS) {
     try {
-      const response = await attempt();
-      if (!retryable(response.status)) return response;
-      console.log(`${label}: HTTP ${String(response.status)}; retrying in ${String(delay / 1000)} s`);
+      const reply = await attempt();
+      if (!retryable(reply.status)) return reply;
+      console.log(`${label}: HTTP ${String(reply.status)}; retrying in ${String(delay / 1000)} s`);
     } catch (err) {
       console.log(`${label}: ${messageOf(err)}; retrying in ${String(delay / 1000)} s`);
     }
     await sleep(delay);
   }
-  // the last attempt: its response is returned whatever the status, and an error ends the run
+  // the last attempt: its reply is returned whatever the status, and an error ends the run
   try {
     return await attempt();
   } catch (err) {
@@ -89,33 +102,35 @@ const isServerTrouble = (status: number): boolean => status === 429 || status >=
 
 /** Fails unless KEY_URL serves exactly KEY. A 404 is retried too: the file may not be live yet. */
 export async function checkKeyFile(fetch: Fetch, sleep: Sleep): Promise<void> {
-  const response = await withRetry(
+  const reply = await withRetry(
     "key file",
-    () => fetch(KEY_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) }),
+    () => download(fetch(KEY_URL, { signal: AbortSignal.timeout(TIMEOUT_MS) })),
     (status) => status === 404 || isServerTrouble(status),
     sleep,
   );
-  if (!response.ok) throw new BuildError(`key file ${KEY_URL}: HTTP ${String(response.status)}`);
-  if ((await response.text()) !== KEY) throw new BuildError(`key file ${KEY_URL} does not hold exactly the key`);
+  if (!reply.ok) throw new BuildError(`key file ${KEY_URL}: HTTP ${String(reply.status)}`);
+  if (reply.body !== KEY) throw new BuildError(`key file ${KEY_URL} does not hold exactly the key`);
 }
 
 /** Submits `urls` and returns IndexNow's status: 200 accepted, 202 accepted with the key check pending. */
 export async function ping(urls: readonly string[], fetch: Fetch, sleep: Sleep): Promise<200 | 202> {
-  const response = await withRetry(
+  const reply = await withRetry(
     "IndexNow",
     () =>
-      fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(submission(urls)),
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      }),
+      download(
+        fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          body: JSON.stringify(submission(urls)),
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+        }),
+      ),
     isServerTrouble,
     sleep,
   );
-  if (response.status === 200 || response.status === 202) return response.status;
-  const detail = (await response.text()).trim();
-  throw new BuildError(`IndexNow: HTTP ${String(response.status)}${detail === "" ? "" : `: ${detail}`}`);
+  if (reply.status === 200 || reply.status === 202) return reply.status;
+  const detail = reply.body.trim();
+  throw new BuildError(`IndexNow: HTTP ${String(reply.status)}${detail === "" ? "" : `: ${detail}`}`);
 }
 
 /** Runs the command line; tests pass a fake `fetch` and `sleep`. */
