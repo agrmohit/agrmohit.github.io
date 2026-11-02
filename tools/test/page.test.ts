@@ -85,6 +85,14 @@ describe("projectPage", () => {
   });
 
   // the CSP allows the inline script by its hash: an edit to one without the other blocks the script
+  it("preloads every module copy.js imports, so they load beside it, not after it", async () => {
+    const source = await Bun.file(new URL("../../assets/js/copy.js", import.meta.url)).text();
+    const imports = [...source.matchAll(/^import .* from "\.\/(.+)";$/gm)].map((match) => match[1]);
+    expect(imports.length).toBeGreaterThan(0); // else the check below passes on nothing
+    const html = projectPage(PAGE);
+    for (const module of imports) expect(html).toContain(`<link rel="modulepreload" href="/assets/js/${module}" />`);
+  });
+
   it("allows its inline script by the script's own hash", () => {
     const html = projectPage(PAGE);
     // the page's one inline script; the others load by src
