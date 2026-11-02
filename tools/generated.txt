@@ -11,11 +11,17 @@ projects/beszelscope/card.png
 projects/beszelscope/index.html
 projects/earthrise/card.png
 projects/momentum-menu/card.png
+projects/momentum-menu/docs/charging.jxl
 projects/momentum-menu/docs/charging.webp
+projects/momentum-menu/docs/disconnected.jxl
 projects/momentum-menu/docs/disconnected.webp
+projects/momentum-menu/docs/equaliser.jxl
 projects/momentum-menu/docs/equaliser.webp
+projects/momentum-menu/docs/headphone-settings.jxl
 projects/momentum-menu/docs/headphone-settings.webp
+projects/momentum-menu/docs/paired-devices.jxl
 projects/momentum-menu/docs/paired-devices.webp
+projects/momentum-menu/docs/settings.jxl
 projects/momentum-menu/docs/settings.webp
 projects/momentum-menu/index.html
 projects/omnivore-epub/card.png

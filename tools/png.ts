@@ -4,7 +4,7 @@
 // systems. Card PNGs are written here with node:zlib, which bun ships as one build everywhere; that is why
 // tools/package.json pins bun.
 
-import { deflateSync } from "node:zlib";
+import { deflateSync, inflateSync } from "node:zlib";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import { BuildError } from "./errors.ts";
 import { quantise } from "./quantise.ts";
@@ -42,6 +42,81 @@ export async function svgToPalettePng(svg: string, width: number): Promise<Uint8
 }
 
 const SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+/**
+ * The pixels of an 8-bit RGBA PNG with no interlacing, 4 bytes a pixel, row by row. That is what Bun.Image
+ * writes, and this reads only those: any other PNG throws. `name` only labels the error.
+ */
+export function decodeRgbaPng(
+  bytes: Uint8Array,
+  name: string,
+): { width: number; height: number; data: Uint8Array<ArrayBuffer> } {
+  if (bytes.length < SIGNATURE.length || !SIGNATURE.every((byte, i) => bytes[i] === byte))
+    throw new BuildError(`${name}: not a PNG`);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let width = 0;
+  let height = 0;
+  const idat: Uint8Array[] = [];
+  for (let at = SIGNATURE.length; at + 8 <= bytes.length; ) {
+    const length = view.getUint32(at);
+    const type = new TextDecoder().decode(bytes.subarray(at + 4, at + 8));
+    const data = bytes.subarray(at + 8, at + 8 + length);
+    if (type === "IHDR") {
+      width = view.getUint32(at + 8);
+      height = view.getUint32(at + 12);
+      const [depth, colour, , , interlace] = data.subarray(8, 13);
+      if (depth !== 8 || colour !== 6 || interlace !== 0)
+        throw new BuildError(`${name}: a PNG that is not 8-bit RGBA without interlacing`);
+    } else if (type === "IDAT") idat.push(data);
+    at += 12 + length;
+  }
+
+  const stride = width * 4;
+  let raw: Uint8Array;
+  try {
+    raw = inflateSync(Buffer.concat(idat));
+  } catch (err) {
+    throw new BuildError(`${name}: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  if (width === 0 || raw.length !== height * (stride + 1))
+    throw new BuildError(`${name}: ${raw.length} bytes of pixel data for ${width} x ${height}`);
+
+  // each row is a filter type, then each byte less a prediction from its decoded neighbours (PNG spec, 9.2)
+  const pixels = new Uint8Array(height * stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)] ?? 0;
+    const row = y * stride;
+    for (let i = 0; i < stride; i++) {
+      const left = i >= 4 ? (pixels[row + i - 4] ?? 0) : 0;
+      const up = y > 0 ? (pixels[row - stride + i] ?? 0) : 0;
+      const upLeft = i >= 4 && y > 0 ? (pixels[row - stride + i - 4] ?? 0) : 0;
+      const byte = raw[y * (stride + 1) + 1 + i] ?? 0;
+      pixels[row + i] = (byte + predict(filter, left, up, upLeft, name)) & 0xff;
+    }
+  }
+  return { width, height, data: pixels };
+}
+
+/** The PNG filter's prediction of a byte from its left, upper and upper-left neighbours. */
+function predict(filter: number, left: number, up: number, upLeft: number, name: string): number {
+  switch (filter) {
+    case 0:
+      return 0;
+    case 1:
+      return left;
+    case 2:
+      return up;
+    case 3:
+      return (left + up) >> 1;
+    case 4: {
+      const p = left + up - upLeft;
+      const [pa, pb, pc] = [Math.abs(p - left), Math.abs(p - up), Math.abs(p - upLeft)];
+      return pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+    }
+    default:
+      throw new BuildError(`${name}: PNG filter type ${filter}`);
+  }
+}
 
 /** An 8-bit palette PNG. `palette`: 3 bytes a colour, at most 256 colours; `indices`: one byte a pixel, row by row. */
 export function palettePng(width: number, height: number, palette: Uint8Array, indices: Uint8Array): Uint8Array {

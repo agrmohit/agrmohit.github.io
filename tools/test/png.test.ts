@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { inflateSync } from "node:zlib";
-import { palettePng } from "../png.ts";
+import { deflateSync, inflateSync } from "node:zlib";
+import { decodeRgbaPng, palettePng } from "../png.ts";
 import { failure } from "./failure.ts";
 
 interface Chunk {
@@ -137,5 +137,116 @@ describe("palettePng", () => {
     expect(failure(() => palettePng(width, height, new Uint8Array(palette), new Uint8Array(indices)))).toContain(
       message,
     );
+  });
+});
+
+/** A PNG chunk: length, type, data, CRC. */
+function pngChunk(type: string, data: Uint8Array): Uint8Array {
+  const typed = Buffer.concat([Buffer.from(type, "ascii"), data]);
+  const out = new Uint8Array(12 + data.length);
+  const view = new DataView(out.buffer);
+  view.setUint32(0, data.length);
+  out.set(typed, 4);
+  view.setUint32(8 + data.length, Bun.hash.crc32(typed) >>> 0);
+  return out;
+}
+
+/** `rgba` as a PNG, every row with filter `filter`; the PNG spec's own filters, written out for the test. */
+function filteredPng(width: number, height: number, rgba: Uint8Array, filter: number, colour = 6): Uint8Array {
+  const stride = width * 4;
+  const at = (x: number, y: number) => (x < 0 || y < 0 ? 0 : (rgba[y * stride + x] ?? 0));
+  const raw = new Uint8Array(height * (stride + 1));
+  for (let y = 0; y < height; y++) {
+    raw[y * (stride + 1)] = filter;
+    for (let i = 0; i < stride; i++) {
+      const [left, up, upLeft] = [at(i - 4, y), at(i, y - 1), at(i - 4, y - 1)];
+      const paeth = () => {
+        const p = left + up - upLeft;
+        const [pa, pb, pc] = [Math.abs(p - left), Math.abs(p - up), Math.abs(p - upLeft)];
+        return pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+      };
+      const predicted = [0, left, up, (left + up) >> 1, paeth()][filter] ?? 0;
+      raw[y * (stride + 1) + 1 + i] = (at(i, y) - predicted) & 0xff;
+    }
+  }
+  const header = new Uint8Array(13);
+  new DataView(header.buffer).setUint32(0, width);
+  new DataView(header.buffer).setUint32(4, height);
+  header.set([8, colour, 0, 0, 0], 8);
+  return Buffer.concat([
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", deflateSync(raw)),
+    pngChunk("IEND", new Uint8Array(0)),
+  ]);
+}
+
+// pixels where every neighbour differs, so each filter's prediction matters
+const pixels = (width: number, height: number) =>
+  new Uint8Array(width * height * 4).map((_, i) => (i * 37 + (i >> 3) * 11) & 0xff);
+
+describe("decodeRgbaPng", () => {
+  interface Row {
+    name: string;
+    width: number;
+    height: number;
+    filter: number;
+  }
+
+  const rows: readonly Row[] = [
+    { name: "filter none", width: 5, height: 3, filter: 0 },
+    { name: "filter sub", width: 5, height: 3, filter: 1 },
+    { name: "filter up", width: 5, height: 3, filter: 2 },
+    { name: "filter average", width: 5, height: 3, filter: 3 },
+    { name: "filter paeth", width: 5, height: 3, filter: 4 },
+    { name: "one pixel", width: 1, height: 1, filter: 4 },
+    { name: "one row", width: 7, height: 1, filter: 3 },
+    { name: "one column", width: 1, height: 6, filter: 2 },
+  ];
+
+  it.each(rows)("$name decodes to its pixels", ({ width, height, filter }) => {
+    const rgba = pixels(width, height);
+    expect(decodeRgbaPng(filteredPng(width, height, rgba, filter), "t.png")).toEqual({ width, height, data: rgba });
+  });
+
+  it("reads what Bun.Image writes", async () => {
+    const rgba = pixels(40, 20);
+    const png = await new Bun.Image(filteredPng(40, 20, rgba, 0)).png().bytes();
+    expect(decodeRgbaPng(png, "t.png").data).toEqual(rgba);
+  });
+
+  interface RefusalRow {
+    name: string;
+    png: () => Uint8Array;
+    message: string;
+  }
+
+  const refusals: readonly RefusalRow[] = [
+    { name: "a file that is not a PNG", png: () => new TextEncoder().encode("not a png"), message: "not a PNG" },
+    {
+      name: "a palette PNG",
+      png: () => palettePng(2, 2, new Uint8Array(3), new Uint8Array(4)),
+      message: "not 8-bit RGBA",
+    },
+    { name: "an RGB PNG", png: () => filteredPng(2, 2, pixels(2, 2), 0, 2), message: "not 8-bit RGBA" },
+    {
+      name: "a filter type past 4",
+      png: () => filteredPng(2, 2, pixels(2, 2), 5),
+      message: "filter type 5",
+    },
+    { name: "a PNG cut short", png: () => filteredPng(4, 4, pixels(4, 4), 0).subarray(0, 40), message: "t.png" },
+    {
+      name: "a header that claims more rows than the data holds",
+      png: () => {
+        const png = filteredPng(4, 4, pixels(4, 4), 0);
+        png[23] = 5; // the low byte of IHDR's height; the decoder does not check CRCs
+        return png;
+      },
+      message: "bytes of pixel data for 4 x 5",
+    },
+  ];
+
+  it.each(refusals)("refuses $name", ({ png, message }) => {
+    expect(failure(() => decodeRgbaPng(png(), "t.png"))).toContain(message);
   });
 });
