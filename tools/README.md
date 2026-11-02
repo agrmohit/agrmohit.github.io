@@ -25,7 +25,10 @@ make test        # the tests, offline
 make typecheck   # TypeScript 7, strict
 make lint        # Biome; `make fmt` fixes what it can
 make dev         # build into a temporary folder, local "readme" entries allowed
+make indexnow    # print the IndexNow request; INDEXNOW_FLAGS=--send submits it
 ```
+
+After each deploy, `pages.yml` runs `indexnow.ts --send` in its own job. The script checks that `/<key>.txt` serves the key, then submits every URL in `sitemap.xml` to IndexNow (Bing, Naver and others; not Google). It retries 429, 5xx and network errors twice, waiting 10 s and then 30 s; the key check also retries a 404. If the submission still fails, that job fails and GitHub emails; the deploy job stays green.
 
 The targets that run the build call `bunx bun@<version>` with the version `package.json` pins. `bun tools/build.ts --check` itself exits 0 when everything matches, 1 on a difference and 2 on an error; `make` turns both failures into 2. The build needs [gh](https://cli.github.com), logged in: READMEs come from GitHub, never from a checkout.
 

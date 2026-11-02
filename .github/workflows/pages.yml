@@ -38,7 +38,9 @@ jobs:
       - name: Collect the site
         run: |
           mkdir _site
-          cp -R index.html 404.html favicon.ico manifest.webmanifest robots.txt sitemap.xml .well-known assets projects _site/
+          # the .txt is the IndexNow key file; tools/indexnow.ts names the key
+          cp -R index.html 404.html favicon.ico manifest.webmanifest robots.txt sitemap.xml \
+            01a19dc3-cb5f-77a9-81fd-1ad5b8b27aab.txt .well-known assets projects _site/
           # the types of scene.js and stars.js are for the build's TypeScript, not the browser
           find _site -name '*.d.ts' -delete
 
@@ -49,3 +51,20 @@ jobs:
           include-hidden-files: true # since v4 dotfiles are left out by default, and .well-known is one
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  # Tells IndexNow engines (Bing, Naver and others; not Google) about every URL in sitemap.xml. A job of its own, so
+  # an IndexNow failure turns the run red and GitHub emails, while the deploy above stays green and the site is live
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # bun at the version tools/package.json pins; indexnow.ts needs none of the tools' dependencies
+      - name: Install bun
+        run: npm install --global "bun@$(jq -r '.packageManager | sub("^bun@"; "")' tools/package.json)"
+
+      - name: Ping IndexNow
+        run: make indexnow BUN=bun INDEXNOW_FLAGS=--send
