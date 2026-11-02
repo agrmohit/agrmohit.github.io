@@ -42,6 +42,7 @@ make build / make check -> build.ts main()
     for a readme entry: addReadmePage
       openSource(entry)                       github.ts     gh api at the pinned ref
       renderReadme(markdown)                  readme.ts     the passes, in pipeline order
+        shrinkImages                          raster.ts     sizes each <img>; PNG and JPEG become WebP
       projectPage(...)                        page.ts       fills page.html
     for an entry with a card: addCard
       postCard(...)                           images.ts     satori -> sky.ts -> png.ts -> quantise.ts
@@ -94,6 +95,7 @@ cd tools && GOLDEN=write bunx bun@<version> test golden
 - **resvg as WebAssembly:** its native builds differ in the last bit of their floating-point maths between operating systems.
 - **The build writes the card PNGs with node:zlib (`png.ts`):** other encoders link each OS's own zlib.
 - **bun is pinned and checked:** its zlib is what compresses the PNGs.
+- **README images go through `Bun.Image` on its "bun" backend (`raster.ts`):** its codecs are the same on every OS, and that backend keeps its resize the same too; macOS's default, vImage, differs.
 - **Its own median cut (`quantise.ts`):** whole-number maths only, so the palette is the same everywhere; it replaced Pillow, Python and uv.
 - **The patched font is committed:** satori can't turn on Jost's stylistic set, so `fonts/patch-jost.py` bakes the single-storey a into `Jost-500-Medium-a.ttf`. The build only reads the result; the script and the original font are kept to show the patch is reproducible.
 - **The sky is the site's real `scene.js`:** the cards stay in step with the earthrise page.
