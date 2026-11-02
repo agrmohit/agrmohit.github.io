@@ -184,7 +184,71 @@ describe("the owned regions", () => {
   ];
 
   it.each(sitemapRows)("sitemap: $name", ({ entries, want }) => {
-    const locs = [...withSitemap(SITEMAP, entries).matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+    const sitemap = withSitemap(SITEMAP, entries, new Map());
+    const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
     expect(locs).toEqual(want);
+  });
+});
+
+describe("sitemap lastmod", () => {
+  const SITEMAP = "<urlset>\n  <!-- projects:start -->\n  <!-- projects:end -->\n</urlset>";
+  const APP = "https://agrmohit.com/projects/app/";
+  const SKY = "https://agrmohit.com/projects/sky/";
+  const DATE = "2026-01-02T03:04:05Z";
+
+  interface Row {
+    name: string;
+    lastmods: Record<string, string>;
+    /** Each url's loc and its lastmod, or "" for none. */
+    want: Array<[string, string]>;
+  }
+
+  const rows: readonly Row[] = [
+    {
+      name: "a dated page",
+      lastmods: { "/projects/app/": DATE },
+      want: [
+        [APP, DATE],
+        [SKY, ""],
+      ],
+    },
+    {
+      name: "two pages, each its own date",
+      lastmods: { "/projects/app/": DATE, "/projects/sky/": "1999-12-31T23:59:59Z" },
+      want: [
+        [APP, DATE],
+        [SKY, "1999-12-31T23:59:59Z"],
+      ],
+    },
+    {
+      name: "no dates at all",
+      lastmods: {},
+      want: [
+        [APP, ""],
+        [SKY, ""],
+      ],
+    },
+    {
+      name: "a date for a path not in the sitemap",
+      lastmods: { "/projects/other/": DATE },
+      want: [
+        [APP, ""],
+        [SKY, ""],
+      ],
+    },
+  ];
+
+  it.each(rows)("$name", ({ lastmods, want }) => {
+    const sitemap = withSitemap(SITEMAP, [README, LIST_ONLY, LOCAL], new Map(Object.entries(lastmods)));
+    const urls = [...sitemap.matchAll(/<url>([\s\S]*?)<\/url>/g)].map((match) => {
+      const block = match[1] ?? "";
+      return [/<loc>([^<]*)<\/loc>/.exec(block)?.[1] ?? "", /<lastmod>([^<]*)<\/lastmod>/.exec(block)?.[1] ?? ""];
+    });
+    expect(urls).toEqual(want);
+  });
+
+  it("writes the lastmod on its own line after the loc", () => {
+    const sitemap = withSitemap(SITEMAP, [README], new Map([["/projects/app/", DATE]]));
+    expect(sitemap).toContain(`  <url>\n    <loc>${APP}</loc>\n    <lastmod>${DATE}</lastmod>\n  </url>\n`);
   });
 });

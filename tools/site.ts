@@ -79,9 +79,16 @@ export function withProjectList(indexHtml: string, entries: readonly Entry[]): s
   return replaceRegion(indexHtml, "projects", `${items.join("\n\n")}\n`);
 }
 
-/** sitemap.xml with its project pages rebuilt from the manifest. */
-export function withSitemap(sitemap: string, entries: readonly Entry[]): string {
+/**
+ * sitemap.xml with its project pages rebuilt from the manifest. `lastmods` maps a page's path to its lastmod.
+ * A page without one gets no lastmod: search engines distrust dates that don't match the page, so none is better.
+ */
+export function withSitemap(sitemap: string, entries: readonly Entry[], lastmods: ReadonlyMap<string, string>): string {
   const pages = entries.filter((entry) => entry.kind !== "list").filter((entry) => entry.sitemap);
-  const urls = pages.map((page) => `  <url>\n    <loc>https://agrmohit.com${page.path}</loc>\n  </url>\n`);
+  const urls = pages.map((page) => {
+    const lastmod = lastmods.get(page.path);
+    const lastmodLine = lastmod === undefined ? "" : `    <lastmod>${lastmod}</lastmod>\n`;
+    return `  <url>\n    <loc>https://agrmohit.com${page.path}</loc>\n${lastmodLine}  </url>\n`;
+  });
   return replaceRegion(sitemap, "projects", urls.join(""));
 }
