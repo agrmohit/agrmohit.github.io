@@ -4,6 +4,8 @@
 PORT ?= 8765
 ## Folder `make dev` writes to (default: a new temporary folder)
 OUT ?=
+## Flags for `make indexnow`; --send submits instead of printing the request
+INDEXNOW_FLAGS ?=
 
 # Without pipefail a failing command piped into another reports success.
 SHELL := bash
@@ -15,7 +17,7 @@ BUN_VERSION := $(shell sed -n 's/.*"packageManager": "bun@\(.*\)".*/\1/p' tools/
 BUN ?= bunx bun@$(BUN_VERSION)
 
 .DEFAULT_GOAL := help
-.PHONY: help install build check test typecheck lint fmt dev serve screenshots clean
+.PHONY: help install build check test typecheck lint fmt dev serve indexnow screenshots clean
 
 help: ## Show this help
 	@awk 'BEGIN { FS = ":.*## " } \
@@ -55,6 +57,9 @@ dev: ## Build with local "readme" entries allowed, into OUT (never the repo)
 serve: ## Serve the site at http://localhost:PORT/ to preview a change
 	@echo "http://localhost:$(PORT)/"
 	python3 -m http.server $(PORT) --bind localhost
+
+indexnow: ## Print the IndexNow request for sitemap.xml; pages.yml sends it after a deploy
+	$(BUN) tools/indexnow.ts $(INDEXNOW_FLAGS)
 
 screenshots: ## Re-photograph the live site for the install dialog (by hand; needs Chrome and uv)
 	tools/share-images/build.sh screenshots
