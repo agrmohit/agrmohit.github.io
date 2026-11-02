@@ -20,7 +20,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { EXIT, SKIP, visit } from "unist-util-visit";
 import { BuildError } from "./errors.ts";
-import { pngSize } from "./png.ts";
+import { rasterOf, toWebp } from "./raster.ts";
 import { byCodeUnit } from "./sort.ts";
 
 export interface ReadmeOptions {
@@ -34,12 +34,14 @@ export interface ReadmeOptions {
 export interface RenderedReadme {
   html: string;
   images: string[]; // repo paths of local media, sorted; the page copies each to the same path
+  webps: Map<string, Uint8Array>; // WebP copies of PNG and JPEG images, by the repo path the page loads
   title: string | undefined; // the first h1's text
 }
 
 /** The README as page HTML, with the media files it loads and its title. */
 export async function renderReadme(markdown: string, options: ReadmeOptions): Promise<RenderedReadme> {
-  const images = new Set<string>();
+  const webps = new Map<string, Uint8Array>();
+  const converted = new Set<Element>(); // the <img>s now showing one of `webps`
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
@@ -48,8 +50,11 @@ export async function renderReadme(markdown: string, options: ReadmeOptions): Pr
     .use(onTree((tree) => dropNamed(tree, options.drop))) // first, so a dropped section's images are not copied
     .use(rehypeSlug) // after dropNamed: a dropped heading would shift the -1 suffixes of the ones after it
     .use(rehypeGithubAlerts, {}) // {} is its defaults; its types insist on an argument
-    .use(onTree((tree) => localiseMedia(tree, options.readmeDir, images)))
-    .use(() => (tree: Root) => sizeImages(tree, options.file)) // after localiseMedia: it reads repo paths
+    .use(onTree((tree) => localiseMedia(tree, options.readmeDir)))
+    // after localiseMedia: it reads repo paths
+    .use(() => async (tree: Root): Promise<undefined> => {
+      await shrinkImages(tree, options.file, webps, converted);
+    })
     .use(onTree((tree) => linkToGitHub(tree, options)))
     .use(onTree(pruneEmpty)) // after localiseMedia: a badge's link is empty only once its image went
     .use(onTree(dropEmpty)) // after pruneEmpty: a section of badges is empty only once they went
@@ -59,9 +64,9 @@ export async function renderReadme(markdown: string, options: ReadmeOptions): Pr
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const tree = await processor.run(processor.parse(markdown));
-  const sorted = [...images].sort(byCodeUnit);
-  checkCollisions(sorted);
-  return { html: `${processor.stringify(tree).trim()}\n`, images: sorted, title: firstH1Text(tree) };
+  const images = [...mediaFiles(tree, converted)].sort(byCodeUnit);
+  checkCollisions([...images, ...webps.keys()]);
+  return { html: `${processor.stringify(tree).trim()}\n`, images, webps, title: firstH1Text(tree) };
 }
 
 let highlight: ReturnType<typeof rehypeStarryNight> | undefined;
@@ -185,18 +190,21 @@ const MEDIA_ATTRIBUTES = new Map<string, readonly string[]>([
   ["track", ["src"]],
 ]);
 
+// "a.png 1x, b.png 2x": a URL and an optional descriptor per candidate
+const srcsetCandidates = (srcset: string): string[][] =>
+  srcset.split(",").map((candidate) => candidate.trim().split(/\s+/));
+
 /**
- * Makes each media file's URL a repo path and adds it to `images`. Removes an element whose file is hosted
- * elsewhere, an <img> with no src, and a <source> left with no srcset.
+ * Makes each media file's URL a repo path. Removes an element whose file is hosted elsewhere, an <img> with
+ * no src, and a <source> left with no srcset.
  */
-function localiseMedia(tree: Root, readmeDir: string, images: Set<string>): void {
+function localiseMedia(tree: Root, readmeDir: string): void {
   // the URL to keep, or null if it is hosted elsewhere
   const local = (url: string): string | null => {
     if (url.startsWith("data:")) return url;
     if (url === "" || hasScheme(url)) return null;
     const file = repoPath(url, readmeDir);
     if (file === "" || file.endsWith("/")) throw new BuildError(`${url} names a folder, not a file to show`);
-    images.add(file);
     // the file keeps its own name; the attribute needs it %-escaped, or a space would end a srcset URL
     return encodeURI(file);
   };
@@ -214,14 +222,11 @@ function localiseMedia(tree: Root, readmeDir: string, images: Set<string>): void
         element.properties[attribute] = file;
         continue;
       }
-      // "a.png 1x, b.png 2x": a URL and an optional descriptor per candidate; ones hosted elsewhere go
-      const candidates = value
-        .split(",")
-        .map((candidate) => candidate.trim().split(/\s+/))
-        .flatMap(([url = "", ...descriptor]) => {
-          const file = local(url);
-          return file === null ? [] : [[file, ...descriptor].join(" ")];
-        });
+      // candidates hosted elsewhere go
+      const candidates = srcsetCandidates(value).flatMap(([url = "", ...descriptor]) => {
+        const file = local(url);
+        return file === null ? [] : [[file, ...descriptor].join(" ")];
+      });
       if (candidates.length > 0) element.properties.srcSet = candidates.join(", ");
       else if (element.tagName === "source")
         return true; // a <source> is nothing without one
@@ -232,26 +237,80 @@ function localiseMedia(tree: Root, readmeDir: string, images: Set<string>): void
 }
 
 /**
- * Gives each local PNG <img> a width and height, so the page keeps its space before the file loads.
- * A size the README set wins; a missing one follows the file's shape. Other formats stay as written.
+ * Sizes each local <img> from its file, and swaps a PNG or JPEG for a WebP twice its shown width.
+ * A size the README set wins; a missing one follows the file's shape, so the page holds the space while the
+ * file loads. 2x is sharp on a phone. A file is never enlarged; a width that is not pixels ("50%") keeps its
+ * own. An <img> with a srcset keeps its files, as the browser would pick from the srcset anyway.
  */
-async function sizeImages(tree: Root, file: ReadmeOptions["file"]): Promise<void> {
+async function shrinkImages(
+  tree: Root,
+  file: ReadmeOptions["file"],
+  webps: Map<string, Uint8Array>,
+  converted: Set<Element>,
+): Promise<void> {
   const images: Element[] = [];
   visit(tree, "element", (element) => {
     if (element.tagName === "img") images.push(element);
   });
+
+  // per source file: its bytes, the widest it is wanted at, and the <img>s that show it
+  const wanted = new Map<string, { bytes: Uint8Array; width: number; images: Element[] }>();
   for (const image of images) {
-    const { src, width, height } = image.properties;
+    const { src, srcSet, width, height } = image.properties;
     if (typeof src !== "string" || src.startsWith("data:")) continue;
-    if (width !== undefined && height !== undefined) continue;
     const name = decodeURI(src); // localiseMedia %-escaped it
-    const size = pngSize(await file(name), name);
-    if (size === undefined) continue;
+    const bytes = await file(name);
+    const raster = await rasterOf(bytes, name);
+    if (raster === undefined) continue;
+
     // a width or height that is not a number of pixels ("50%") stays as written, with no partner
-    if (width === undefined && height === undefined) Object.assign(image.properties, size);
-    else if (typeof width === "number") image.properties.height = Math.round((width * size.height) / size.width);
-    else if (typeof height === "number") image.properties.width = Math.round((height * size.width) / size.height);
+    if (width === undefined && height === undefined) {
+      image.properties.width = raster.width;
+      image.properties.height = raster.height;
+    } else if (height === undefined && typeof width === "number")
+      image.properties.height = Math.round((width * raster.height) / raster.width);
+    else if (width === undefined && typeof height === "number")
+      image.properties.width = Math.round((height * raster.width) / raster.height);
+
+    if (srcSet !== undefined || (raster.format !== "png" && raster.format !== "jpeg")) continue;
+    const shown = image.properties.width;
+    const target = typeof shown === "number" ? Math.min(2 * shown, raster.width) : raster.width;
+    const entry = wanted.get(name);
+    if (entry === undefined) wanted.set(name, { bytes, width: target, images: [image] });
+    else {
+      entry.width = Math.max(entry.width, target);
+      entry.images.push(image);
+    }
   }
+
+  const sources = new Map<string, string>(); // WebP path to the file it came from
+  for (const [name, { bytes, width, images: showing }] of wanted) {
+    const webp = `${name.replace(/\.[^./]+$/, "")}.webp`;
+    const other = sources.get(webp);
+    if (other !== undefined) throw new BuildError(`images ${other} and ${name} would both be ${webp}`);
+    sources.set(webp, name);
+    webps.set(webp, await toWebp(bytes, width, name));
+    for (const image of showing) {
+      image.properties.src = encodeURI(webp);
+      converted.add(image);
+    }
+  }
+}
+
+/** The repo paths of the local files the page loads as they are: all but the WebPs of `converted`. */
+function mediaFiles(tree: Root, converted: ReadonlySet<Element>): Set<string> {
+  const files = new Set<string>();
+  visit(tree, "element", (element) => {
+    const attributes = MEDIA_ATTRIBUTES.get(element.tagName);
+    if (attributes === undefined || converted.has(element)) return;
+    for (const attribute of attributes) {
+      const value = element.properties[attribute];
+      if (typeof value !== "string" || value === "") continue;
+      const urls = attribute === "srcSet" ? srcsetCandidates(value).map(([url = ""]) => url) : [value];
+      for (const url of urls) if (!url.startsWith("data:")) files.add(decodeURI(url)); // %-escaped by localiseMedia
+    }
+  });
+  return files;
 }
 
 /** Points each relative link at the file on GitHub at the page's ref. */
@@ -390,6 +449,7 @@ function checkCollisions(images: readonly string[]): void {
   for (const file of images) {
     if (RESERVED.includes(file)) throw new BuildError(`image ${file} would overwrite the page's own ${file}`);
     const other = seen.get(file.toLowerCase());
+    if (other === file) throw new BuildError(`two images would both be ${file}`);
     if (other !== undefined) throw new BuildError(`images ${other} and ${file} differ only in case`);
     seen.set(file.toLowerCase(), file);
   }

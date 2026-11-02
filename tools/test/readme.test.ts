@@ -277,6 +277,29 @@ describe("wide wrappers", () => {
   });
 });
 
+// media for the image passes, built once: top-level await, as a describe callback runs synchronously
+const widePng = palettePng(
+  40,
+  20,
+  new Uint8Array([0, 0, 0, 255, 255, 255]),
+  new Uint8Array(800).map((_, i) => i % 2),
+);
+const FILES = new Map<string, Uint8Array>([
+  ["wide.png", widePng],
+  ["pkg/img/wide.png", widePng],
+  ["my shot.png", widePng],
+  ["wide.jpg", await new Bun.Image(widePng).jpeg().bytes()],
+  ["wide.webp", await new Bun.Image(widePng).webp().bytes()],
+  ["odd.png", palettePng(30, 7, new Uint8Array(3), new Uint8Array(30 * 7))],
+  ["text.png", new TextEncoder().encode("not an image")],
+  ["broken.jpg", new Uint8Array([0xff, 0xd8, 0xff, 0xe0])],
+]);
+// a path not in FILES fails the row, so a wrongly spelled or escaped path cannot pass as "no image"
+const file = (repoPath: string) => {
+  const bytes = FILES.get(repoPath);
+  return bytes === undefined ? Promise.reject(new Error(`no file ${repoPath}`)) : Promise.resolve(bytes);
+};
+
 describe("what the page needs", () => {
   interface ImagesRow {
     name: string;
@@ -355,101 +378,194 @@ describe("what the page needs", () => {
     ]);
   });
 
-  interface SizeRow {
+  interface MediaRow {
     name: string;
     markdown: string;
     readmeDir?: string;
     /** The <img> tags the HTML must hold, in order. */
     imgs: string[];
+    /** The WebP files the page gets, by path, with each one's width in pixels. */
+    webps: Record<string, number>;
+    /** The files the page copies as they are. */
+    copied: string[];
   }
 
-  // wide.png is 40 x 20, odd.png 30 x 7; notpng.png and photo.jpg are not PNGs
-  const sizeRows: readonly SizeRow[] = [
+  // wide.* are 40 x 20 and odd.png 30 x 7; text.png holds no image
+  const mediaRows: readonly MediaRow[] = [
     {
       name: "a width alone gets the height that keeps the shape",
       markdown: '<img src="wide.png" alt="w" width="10">',
-      imgs: ['<img src="wide.png" alt="w" width="10" height="5">'],
+      imgs: ['<img src="wide.webp" alt="w" width="10" height="5">'],
+      webps: { "wide.webp": 20 },
+      copied: [],
     },
     {
       name: "a height alone gets the width that keeps the shape",
       markdown: '<img src="wide.png" alt="w" height="10">',
-      imgs: ['<img src="wide.png" alt="w" height="10" width="20">'],
+      imgs: ['<img src="wide.webp" alt="w" height="10" width="20">'],
+      webps: { "wide.webp": 40 },
+      copied: [],
     },
     {
       name: "no size gets the file's own",
       markdown: "![w](wide.png)",
-      imgs: ['<img src="wide.png" alt="w" width="40" height="20">'],
+      imgs: ['<img src="wide.webp" alt="w" width="40" height="20">'],
+      webps: { "wide.webp": 40 },
+      copied: [],
     },
     {
       name: "a computed size rounds to whole pixels",
       markdown: '<img src="odd.png" alt="o" width="10">',
-      imgs: ['<img src="odd.png" alt="o" width="10" height="2">'],
+      imgs: ['<img src="odd.webp" alt="o" width="10" height="2">'],
+      webps: { "odd.webp": 20 },
+      copied: [],
     },
     {
       name: "both sizes stay as written, even off the file's shape",
       markdown: '<img src="wide.png" alt="w" width="10" height="10">',
-      imgs: ['<img src="wide.png" alt="w" width="10" height="10">'],
+      imgs: ['<img src="wide.webp" alt="w" width="10" height="10">'],
+      webps: { "wide.webp": 20 },
+      copied: [],
     },
     {
-      name: "a percentage width stays, with no height",
+      name: "a percentage width stays, with no height, at the file's own width",
       markdown: '<img src="wide.png" alt="w" width="50%">',
-      imgs: ['<img src="wide.png" alt="w" width="50%">'],
+      imgs: ['<img src="wide.webp" alt="w" width="50%">'],
+      webps: { "wide.webp": 40 },
+      copied: [],
     },
     {
-      name: "a file that is not a PNG stays unsized",
-      markdown: '<img src="notpng.png" alt="n" width="10"> <img src="photo.jpg" alt="j" width="10">',
-      imgs: ['<img src="notpng.png" alt="n" width="10">', '<img src="photo.jpg" alt="j" width="10">'],
+      name: "twice the width, but never wider than the file",
+      markdown: '<img src="wide.png" alt="w" width="30">',
+      imgs: ['<img src="wide.webp" alt="w" width="30" height="15">'],
+      webps: { "wide.webp": 40 },
+      copied: [],
+    },
+    {
+      name: "a JPEG becomes a WebP too",
+      markdown: '<img src="wide.jpg" alt="j" width="10">',
+      imgs: ['<img src="wide.webp" alt="j" width="10" height="5">'],
+      webps: { "wide.webp": 20 },
+      copied: [],
+    },
+    {
+      name: "a WebP is sized and copied as it is",
+      markdown: '<img src="wide.webp" alt="w" width="10">',
+      imgs: ['<img src="wide.webp" alt="w" width="10" height="5">'],
+      webps: {},
+      copied: ["wide.webp"],
+    },
+    {
+      name: "a file that is no image stays as written",
+      markdown: '<img src="text.png" alt="t" width="10">',
+      imgs: ['<img src="text.png" alt="t" width="10">'],
+      webps: {},
+      copied: ["text.png"],
     },
     {
       name: "a data image stays as written",
       markdown: '<img src="data:image/png;base64,AA==" alt="d" width="10">',
       imgs: ['<img src="data:image/png;base64,AA==" alt="d" width="10">'],
+      webps: {},
+      copied: [],
     },
     {
-      name: "the <img> in a <picture> is sized",
-      markdown: '<picture><source srcset="odd.png"><img src="wide.png" alt="w" width="8"></picture>',
-      imgs: ['<img src="wide.png" alt="w" width="8" height="4">'],
+      name: "an <img> with a srcset is sized but keeps its files",
+      markdown: '<img src="wide.png" srcset="wide.png 1x" alt="w" width="10">',
+      imgs: ['<img src="wide.png" srcset="wide.png 1x" alt="w" width="10" height="5">'],
+      webps: {},
+      copied: ["wide.png"],
     },
     {
-      name: "one file shown twice is sized each time",
-      markdown: '<img src="wide.png" alt="a" width="10"> <img src="wide.png" alt="b" width="20">',
+      name: "the <img> in a <picture> becomes a WebP; its <source> keeps the PNG",
+      markdown: '<picture><source srcset="wide.png"><img src="wide.png" alt="w" width="8"></picture>',
+      imgs: ['<img src="wide.webp" alt="w" width="8" height="4">'],
+      webps: { "wide.webp": 16 },
+      copied: ["wide.png"],
+    },
+    {
+      name: "a video's poster is copied as it is",
+      markdown: '<video src="v.mp4" poster="wide.png"></video>',
+      imgs: [],
+      webps: {},
+      copied: ["v.mp4", "wide.png"],
+    },
+    {
+      name: "one file shown twice is one WebP, wide enough for the wider",
+      markdown: '<img src="wide.png" alt="a" width="10"> <img src="wide.png" alt="b" width="15">',
       imgs: [
-        '<img src="wide.png" alt="a" width="10" height="5">',
-        '<img src="wide.png" alt="b" width="20" height="10">',
+        '<img src="wide.webp" alt="a" width="10" height="5">',
+        '<img src="wide.webp" alt="b" width="15" height="8">',
       ],
+      webps: { "wide.webp": 30 },
+      copied: [],
     },
     {
       name: "a file in a folder, under a README in a folder",
       markdown: '<img src="img/wide.png" alt="w" width="10">',
       readmeDir: "pkg",
-      imgs: ['<img src="pkg/img/wide.png" alt="w" width="10" height="5">'],
+      imgs: ['<img src="pkg/img/wide.webp" alt="w" width="10" height="5">'],
+      webps: { "pkg/img/wide.webp": 20 },
+      copied: [],
+    },
+    {
+      name: "a srcset file with a space is copied by its real name",
+      markdown: '<picture><source srcset="my%20shot.png 1x"><img src="text.png" alt="t"></picture>',
+      imgs: ['<img src="text.png" alt="t">'],
+      webps: {},
+      copied: ["my shot.png", "text.png"],
     },
     {
       name: "a name with a space is read by its real name",
       markdown: '<img src="my shot.png" alt="s" width="10">',
-      imgs: ['<img src="my%20shot.png" alt="s" width="10" height="5">'],
+      imgs: ['<img src="my%20shot.webp" alt="s" width="10" height="5">'],
+      webps: { "my shot.webp": 20 },
+      copied: [],
     },
   ];
 
-  const png = (width: number, height: number) =>
-    palettePng(width, height, new Uint8Array(3), new Uint8Array(width * height));
-  const FILES = new Map<string, Uint8Array>([
-    ["wide.png", png(40, 20)],
-    ["pkg/img/wide.png", png(40, 20)],
-    ["my shot.png", png(40, 20)],
-    ["odd.png", png(30, 7)],
-    ["notpng.png", new TextEncoder().encode("GIF89a, not a PNG at all")],
-    ["photo.jpg", new Uint8Array([0xff, 0xd8, 0xff, 0xe0])],
-  ]);
-  // a path not in FILES fails the row, so a wrongly spelled or escaped path cannot pass as "not a PNG"
-  const file = (repoPath: string) => {
-    const bytes = FILES.get(repoPath);
-    return bytes === undefined ? Promise.reject(new Error(`no file ${repoPath}`)) : Promise.resolve(bytes);
-  };
-
-  it.each(sizeRows)("img sizes: $name", async ({ markdown, readmeDir = "", imgs }) => {
+  it.each(mediaRows)("img tags: $name", async ({ markdown, readmeDir = "", imgs }) => {
     const { html } = await render(markdown, { readmeDir, file });
     expect([...html.matchAll(/<img\b[^>]*>/g)].map((match) => match[0])).toEqual(imgs);
+  });
+
+  it.each(mediaRows)("webps written: $name", async ({ markdown, readmeDir = "", webps }) => {
+    const { webps: written } = await render(markdown, { readmeDir, file });
+    const widths: Record<string, number> = {};
+    for (const [path, bytes] of written) {
+      const { format, width } = await new Bun.Image(bytes).metadata();
+      expect(format).toBe("webp");
+      widths[path] = width;
+    }
+    expect(widths).toEqual(webps);
+  });
+
+  it.each(mediaRows)("files copied: $name", async ({ markdown, readmeDir = "", copied }) => {
+    expect((await render(markdown, { readmeDir, file })).images).toEqual(copied);
+  });
+
+  interface MediaRefusalRow {
+    name: string;
+    markdown: string;
+    message: string;
+  }
+
+  const mediaRefusals: readonly MediaRefusalRow[] = [
+    { name: "a damaged image", markdown: '<img src="broken.jpg" alt="b">', message: "broken.jpg" },
+    {
+      name: "a PNG and a WebP that would share a name",
+      markdown: '<img src="wide.png" alt="p"> <img src="wide.webp" alt="w">',
+      message: "two images would both be wide.webp",
+    },
+    {
+      name: "a PNG and a JPEG that would make one WebP",
+      markdown: '<img src="wide.png" alt="p"> <img src="wide.jpg" alt="j">',
+      message: "images wide.png and wide.jpg would both be wide.webp",
+    },
+  ];
+
+  it.each(mediaRefusals)("refuses $name", async ({ markdown, message }) => {
+    expect(await asyncFailure(() => render(markdown, { file }))).toContain(message);
   });
 
   it("renders the same twice", async () => {

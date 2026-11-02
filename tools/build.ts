@@ -132,7 +132,7 @@ export async function addReadmePage(
   allowLocal: boolean,
 ): Promise<{ name: string; authored: string | undefined }> {
   const source = await openSource(entry, allowLocal);
-  // renderReadme reads PNGs to size them and the page copies them: one fetch each, as gh is a process a call
+  // renderReadme reads images to size them and the page copies some: one fetch each, as gh is a process a call
   const fetched = new Map<string, Promise<Uint8Array>>();
   const file = (repoPath: string): Promise<Uint8Array> => {
     let bytes = fetched.get(repoPath);
@@ -151,6 +151,7 @@ export async function addReadmePage(
   });
   const folder = `projects/${entry.slug}`;
   for (const image of readme.images) files.set(`${folder}/${image}`, await file(image));
+  for (const [image, bytes] of readme.webps) files.set(`${folder}/${image}`, bytes);
 
   const card = entry.card === false ? undefined : entry.card;
   const name = card?.title ?? readme.title ?? entry.title ?? entry.slug;
