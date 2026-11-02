@@ -39,10 +39,18 @@ jobs:
       - name: Test the generator
         run: make test BUN=bun
 
+  # the main ruleset requires only this job; it runs after a failed test because a skipped required check counts as passed
   check:
     needs: test
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Require every test to pass
+        if: ${{ needs.test.result != 'success' }}
+        run: |
+          echo "a test job ended as ${{ needs.test.result }}"
+          exit 1
+
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
