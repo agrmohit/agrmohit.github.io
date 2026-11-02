@@ -85,6 +85,13 @@ describe("projectPage", () => {
   });
 
   // the CSP allows the inline script by its hash: an edit to one without the other blocks the script
+  // index.html's header gives its nav the space above; the same markup gets the same space
+  it("puts the nav in a <header>, as the home page does", async () => {
+    const home = await Bun.file(new URL("../../index.html", import.meta.url)).text();
+    expect(home).toMatch(/<header>\s*<nav>/);
+    expect(projectPage(PAGE)).toMatch(/<body class="project-page">\s*<header>\s*<nav>[\s\S]*?<\/nav>\s*<\/header>/);
+  });
+
   it("preloads every module copy.js imports, so they load beside it, not after it", async () => {
     const source = await Bun.file(new URL("../../assets/js/copy.js", import.meta.url)).text();
     const imports = [...source.matchAll(/^import .* from "\.\/(.+)";$/gm)].map((match) => match[1]);

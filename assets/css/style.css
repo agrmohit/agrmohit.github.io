@@ -386,7 +386,7 @@ p:hover .emoji-wave {
   max-width: none;
 }
 
-.project-page > nav {
+.project-page > header {
   max-width: calc(80ch - 32px);
   margin-inline: auto;
 }
@@ -401,6 +401,15 @@ p:hover .emoji-wave {
   grid-column: 2;
   min-width: 0;
   margin-block-end: 0;
+}
+
+/* the gap under the nav the home page gets from its h1's margin collapsing through <main> */
+.readme {
+  margin-block-start: var(--line-height);
+}
+
+.readme > :first-child {
+  margin-block-start: 0;
 }
 
 .readme > .wide {
