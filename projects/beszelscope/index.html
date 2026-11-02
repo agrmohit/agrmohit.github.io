@@ -72,7 +72,8 @@
     ></script>
     <!-- Opt-out of tracking on non-canonical urls -->
     <script>if (window.location.hostname !== "agrmohit.com") localStorage.setItem("umami.disabled", "1");</script>
-    <!-- A copy button on long code blocks -->
+    <!-- A copy button on long code blocks; the preload fetches its import beside it, not after it -->
+    <link rel="modulepreload" href="/assets/js/copy-rules.js" />
     <script type="module" src="/assets/js/copy.js"></script>
   </head>
 
