@@ -9,8 +9,8 @@ const ROOT = path.resolve(import.meta.dir, "../..");
 const A = "https://agrmohit.com/";
 const B = "https://agrmohit.com/projects/earthrise/";
 
-/** One scripted answer: a response, or an error `fetch` throws, such as a timeout. */
-type Answer = { status: number; body?: string } | Error;
+/** One scripted answer: a response, or an error `fetch` throws, such as a timeout. An Error body breaks mid-read. */
+type Answer = { status: number; body?: string | Error } | Error;
 
 interface Call {
   url: string;
@@ -26,7 +26,10 @@ function fakes(answers: readonly Answer[]): { fetch: Fetch; sleep: Sleep; calls:
     const answer = answers[calls.length - 1];
     if (answer === undefined) throw new Error(`unscripted request ${String(calls.length)} to ${url}`);
     if (answer instanceof Error) return Promise.reject(answer);
-    return Promise.resolve(new Response(answer.body ?? "", { status: answer.status }));
+    const { body } = answer;
+    // an Error body: the headers arrive, then the connection drops while the body downloads
+    const stream = body instanceof Error ? new ReadableStream({ start: (controller) => controller.error(body) }) : body;
+    return Promise.resolve(new Response(stream ?? "", { status: answer.status }));
   };
   const sleep: Sleep = (ms) => {
     waits.push(ms);
@@ -37,6 +40,7 @@ function fakes(answers: readonly Answer[]): { fetch: Fetch; sleep: Sleep; calls:
 
 const timeout = new DOMException("The operation timed out.", "TimeoutError");
 const refused = new TypeError("Unable to connect");
+const reset = new TypeError("Connection reset");
 
 describe("sitemapUrls", () => {
   interface Row {
@@ -164,6 +168,22 @@ describe("ping", () => {
     { name: "a refused connection, then 200", answers: [refused, { status: 200 }], want: "200", waits: [10_000] },
     { name: "a timeout, then 200", answers: [timeout, { status: 200 }], want: "200", waits: [10_000] },
     {
+      name: "a body that breaks, then 200",
+      answers: [{ status: 200, body: reset }, { status: 200 }],
+      want: "200",
+      waits: [10_000],
+    },
+    {
+      name: "a 400 whose body breaks three times",
+      answers: [
+        { status: 400, body: reset },
+        { status: 400, body: reset },
+        { status: 400, body: reset },
+      ],
+      want: "error: IndexNow: Connection reset",
+      waits: [10_000, 30_000],
+    },
+    {
       name: "429 three times",
       answers: [{ status: 429 }, { status: 429 }, { status: 429, body: "Too Many Requests" }],
       want: "error: IndexNow: HTTP 429: Too Many Requests",
@@ -206,6 +226,25 @@ describe("checkKeyFile", () => {
       name: "502 and a timeout, then the key",
       answers: [{ status: 502 }, timeout, { status: 200, body: KEY }],
       want: "ok",
+      waits: [10_000, 30_000],
+    },
+    {
+      name: "a body that breaks, then the key",
+      answers: [
+        { status: 200, body: reset },
+        { status: 200, body: KEY },
+      ],
+      want: "ok",
+      waits: [10_000],
+    },
+    {
+      name: "a body that breaks three times",
+      answers: [
+        { status: 200, body: reset },
+        { status: 200, body: reset },
+        { status: 200, body: reset },
+      ],
+      want: "error: key file: Connection reset",
       waits: [10_000, 30_000],
     },
     {
