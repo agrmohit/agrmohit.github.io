@@ -1,8 +1,16 @@
 import { describe, expect, it } from "bun:test";
+import { palettePng } from "../png.ts";
 import { type ReadmeOptions, renderReadme, repoPath } from "../readme.ts";
 import { asyncFailure, failure } from "./failure.ts";
 
-const AT: ReadmeOptions = { repo: "o/app", ref: "v1.0.0", readmeDir: "", drop: [] };
+// every file reads as empty: not a PNG, so no image is sized
+const AT: ReadmeOptions = {
+  repo: "o/app",
+  ref: "v1.0.0",
+  readmeDir: "",
+  drop: [],
+  file: () => Promise.resolve(new Uint8Array()),
+};
 const BLOB = "https://github.com/o/app/blob/v1.0.0/";
 const render = (markdown: string, options: Partial<ReadmeOptions> = {}) =>
   renderReadme(markdown, { ...AT, ...options });
@@ -345,6 +353,103 @@ describe("what the page needs", () => {
     expect([...html.matchAll(/min-width:(\d+)px;/g)].map((match) => [match[1], root.includes(match[0])])).toEqual([
       [String(Math.round(width * 0.6)), true],
     ]);
+  });
+
+  interface SizeRow {
+    name: string;
+    markdown: string;
+    readmeDir?: string;
+    /** The <img> tags the HTML must hold, in order. */
+    imgs: string[];
+  }
+
+  // wide.png is 40 x 20, odd.png 30 x 7; notpng.png and photo.jpg are not PNGs
+  const sizeRows: readonly SizeRow[] = [
+    {
+      name: "a width alone gets the height that keeps the shape",
+      markdown: '<img src="wide.png" alt="w" width="10">',
+      imgs: ['<img src="wide.png" alt="w" width="10" height="5">'],
+    },
+    {
+      name: "a height alone gets the width that keeps the shape",
+      markdown: '<img src="wide.png" alt="w" height="10">',
+      imgs: ['<img src="wide.png" alt="w" height="10" width="20">'],
+    },
+    {
+      name: "no size gets the file's own",
+      markdown: "![w](wide.png)",
+      imgs: ['<img src="wide.png" alt="w" width="40" height="20">'],
+    },
+    {
+      name: "a computed size rounds to whole pixels",
+      markdown: '<img src="odd.png" alt="o" width="10">',
+      imgs: ['<img src="odd.png" alt="o" width="10" height="2">'],
+    },
+    {
+      name: "both sizes stay as written, even off the file's shape",
+      markdown: '<img src="wide.png" alt="w" width="10" height="10">',
+      imgs: ['<img src="wide.png" alt="w" width="10" height="10">'],
+    },
+    {
+      name: "a percentage width stays, with no height",
+      markdown: '<img src="wide.png" alt="w" width="50%">',
+      imgs: ['<img src="wide.png" alt="w" width="50%">'],
+    },
+    {
+      name: "a file that is not a PNG stays unsized",
+      markdown: '<img src="notpng.png" alt="n" width="10"> <img src="photo.jpg" alt="j" width="10">',
+      imgs: ['<img src="notpng.png" alt="n" width="10">', '<img src="photo.jpg" alt="j" width="10">'],
+    },
+    {
+      name: "a data image stays as written",
+      markdown: '<img src="data:image/png;base64,AA==" alt="d" width="10">',
+      imgs: ['<img src="data:image/png;base64,AA==" alt="d" width="10">'],
+    },
+    {
+      name: "the <img> in a <picture> is sized",
+      markdown: '<picture><source srcset="odd.png"><img src="wide.png" alt="w" width="8"></picture>',
+      imgs: ['<img src="wide.png" alt="w" width="8" height="4">'],
+    },
+    {
+      name: "one file shown twice is sized each time",
+      markdown: '<img src="wide.png" alt="a" width="10"> <img src="wide.png" alt="b" width="20">',
+      imgs: [
+        '<img src="wide.png" alt="a" width="10" height="5">',
+        '<img src="wide.png" alt="b" width="20" height="10">',
+      ],
+    },
+    {
+      name: "a file in a folder, under a README in a folder",
+      markdown: '<img src="img/wide.png" alt="w" width="10">',
+      readmeDir: "pkg",
+      imgs: ['<img src="pkg/img/wide.png" alt="w" width="10" height="5">'],
+    },
+    {
+      name: "a name with a space is read by its real name",
+      markdown: '<img src="my shot.png" alt="s" width="10">',
+      imgs: ['<img src="my%20shot.png" alt="s" width="10" height="5">'],
+    },
+  ];
+
+  const png = (width: number, height: number) =>
+    palettePng(width, height, new Uint8Array(3), new Uint8Array(width * height));
+  const FILES = new Map<string, Uint8Array>([
+    ["wide.png", png(40, 20)],
+    ["pkg/img/wide.png", png(40, 20)],
+    ["my shot.png", png(40, 20)],
+    ["odd.png", png(30, 7)],
+    ["notpng.png", new TextEncoder().encode("GIF89a, not a PNG at all")],
+    ["photo.jpg", new Uint8Array([0xff, 0xd8, 0xff, 0xe0])],
+  ]);
+  // a path not in FILES fails the row, so a wrongly spelled or escaped path cannot pass as "not a PNG"
+  const file = (repoPath: string) => {
+    const bytes = FILES.get(repoPath);
+    return bytes === undefined ? Promise.reject(new Error(`no file ${repoPath}`)) : Promise.resolve(bytes);
+  };
+
+  it.each(sizeRows)("img sizes: $name", async ({ markdown, readmeDir = "", imgs }) => {
+    const { html } = await render(markdown, { readmeDir, file });
+    expect([...html.matchAll(/<img\b[^>]*>/g)].map((match) => match[0])).toEqual(imgs);
   });
 
   it("renders the same twice", async () => {

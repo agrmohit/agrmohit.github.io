@@ -20,6 +20,7 @@ import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { EXIT, SKIP, visit } from "unist-util-visit";
 import { BuildError } from "./errors.ts";
+import { pngSize } from "./png.ts";
 import { byCodeUnit } from "./sort.ts";
 
 export interface ReadmeOptions {
@@ -27,6 +28,7 @@ export interface ReadmeOptions {
   ref: string; // the tag or commit relative links point at
   readmeDir: string; // the README's folder in the repo; "" for the root
   drop: readonly string[]; // headings of top-level sections to leave out
+  file(repoPath: string): Promise<Uint8Array>; // a file by its path from the repo root
 }
 
 export interface RenderedReadme {
@@ -47,6 +49,7 @@ export async function renderReadme(markdown: string, options: ReadmeOptions): Pr
     .use(rehypeSlug) // after dropNamed: a dropped heading would shift the -1 suffixes of the ones after it
     .use(rehypeGithubAlerts, {}) // {} is its defaults; its types insist on an argument
     .use(onTree((tree) => localiseMedia(tree, options.readmeDir, images)))
+    .use(() => (tree: Root) => sizeImages(tree, options.file)) // after localiseMedia: it reads repo paths
     .use(onTree((tree) => linkToGitHub(tree, options)))
     .use(onTree(pruneEmpty)) // after localiseMedia: a badge's link is empty only once its image went
     .use(onTree(dropEmpty)) // after pruneEmpty: a section of badges is empty only once they went
@@ -226,6 +229,29 @@ function localiseMedia(tree: Root, readmeDir: string, images: Set<string>): void
     }
     return false;
   });
+}
+
+/**
+ * Gives each local PNG <img> a width and height, so the page keeps its space before the file loads.
+ * A size the README set wins; a missing one follows the file's shape. Other formats stay as written.
+ */
+async function sizeImages(tree: Root, file: ReadmeOptions["file"]): Promise<void> {
+  const images: Element[] = [];
+  visit(tree, "element", (element) => {
+    if (element.tagName === "img") images.push(element);
+  });
+  for (const image of images) {
+    const { src, width, height } = image.properties;
+    if (typeof src !== "string" || src.startsWith("data:")) continue;
+    if (width !== undefined && height !== undefined) continue;
+    const name = decodeURI(src); // localiseMedia %-escaped it
+    const size = pngSize(await file(name), name);
+    if (size === undefined) continue;
+    // a width or height that is not a number of pixels ("50%") stays as written, with no partner
+    if (width === undefined && height === undefined) Object.assign(image.properties, size);
+    else if (typeof width === "number") image.properties.height = Math.round((width * size.height) / size.width);
+    else if (typeof height === "number") image.properties.width = Math.round((height * size.width) / size.height);
+  }
 }
 
 /** Points each relative link at the file on GitHub at the page's ref. */
