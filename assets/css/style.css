@@ -308,6 +308,27 @@ main {
   pointer-events: none;
 }
 
+/* Page transitions (transition.js): the text fades out before a page hands its sky on, and in after it takes one up.
+   Hidden text is also invisible to clicks, focus and screen readers, from the end of the fade-out to the start of
+   the fade-in. .arriving (arrive.js) is apart from .text-hidden, so its fallback timer cannot show text an exit hid */
+body > header,
+body > main {
+  transition:
+    opacity var(--text-fade, 150ms) ease,
+    visibility 0s;
+}
+
+.text-hidden body > header,
+.text-hidden body > main,
+.arriving body > header,
+.arriving body > main {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--text-fade, 150ms) ease,
+    visibility 0s var(--text-fade, 150ms);
+}
+
 /* A halo in the page colour round every glyph, so text never sits on a dot */
 body {
   text-shadow:

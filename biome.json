@@ -10,6 +10,11 @@
       "!tools/test/fixture",
       "assets/js/copy.js",
       "assets/js/copy-rules.js",
+      "assets/earthrise/arrive.js",
+      "assets/earthrise/handoff.js",
+      "assets/earthrise/home.js",
+      "assets/earthrise/project.js",
+      "assets/earthrise/transition.js",
       "biome.json"
     ]
   },

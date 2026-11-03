@@ -40,6 +40,7 @@ export const DEFAULTS = {
   playing: true,
   progress: 0.35, // where in the pass to start, 0 to 1
   earth: true, // false draws only the stars, over the whole canvas: the sky behind the project pages
+  fadeIn: true, // fade the canvas in on starting; false shows it at once, for a page that takes up another's sky
 };
 
 // Settings from a URL's query string or hash, such as "date=1883984400000&earthTint=0.7": "1" or "0" for
@@ -135,7 +136,13 @@ export function earthrise(canvas, params = {}) {
     t = 0,
     first = true,
     started = false,
-    shownFade = "";
+    shownFade = "",
+    // px the Earth and the ground are sunk below where the orbit puts them, for a page transition
+    // (transition.js); the stars stay put. draw() rounds each to whole rows of dots, to keep the halftone grid
+    earthSinkAsked = 0,
+    groundSinkAsked = 0,
+    held = false, // the clock is stopped for a transition, whatever p.playing says
+    shownDate = 0; // ms since the epoch the sky was last laid out for, which date: null leaves to the clock
   const listeners = new Set();
 
   // --- the lunar surface, in km: along the track (s, from the nadir) and across it (u) ---
@@ -271,7 +278,8 @@ export function earthrise(canvas, params = {}) {
   };
 
   const layout = () => {
-    phys = derive(p);
+    shownDate = p.date ?? Date.now();
+    phys = derive({ ...p, date: shownDate });
     tanDip = Math.tan(phys.dip);
     sun = phys.sun; // toward the Sun, in the camera's frame (x right, y up, z toward the viewer)
     // The Sun over the ground. The camera looks at the horizon, dip below level,
@@ -411,7 +419,6 @@ export function earthrise(canvas, params = {}) {
   const layoutStars = () => {
     const tint = (ci) => colors.stars[ci < 0 ? 0 : ci < 0.5 ? 1 : ci < 1.1 ? 2 : 3];
     const { e, right, up } = phys.axes;
-    const er = (phys.earthDiameter / 2) * scale;
     stars = [];
     for (const name of starFiles()) {
       if (!catalogue[name]) {
@@ -434,7 +441,6 @@ export function earthrise(canvas, params = {}) {
         const dx = ((sx * right[0] + sy * right[1] + sz * right[2]) / z) * scale,
           dy = -((sx * up[0] + sy * up[1] + sz * up[2]) / z) * scale;
         if (Math.abs(dx) > W / 2 + cell || Math.abs(dy) > 2 * H) continue;
-        if (p.earth && Math.hypot(dx, dy) < er + cell) continue; // always behind the Earth's disc
         // magnitudes are already a perceptual scale: brightness linear in them,
         // from the faintest shown to Sirius at -1.5
         const b = 0.25 + 0.75 * clamp((p.limitingMag - mag[i]) / (p.limitingMag + 1.5));
@@ -452,13 +458,20 @@ export function earthrise(canvas, params = {}) {
     const rise = phys.rate * p.timeScale * t; // rad the sky has turned this pass
     const ex = W / 2,
       er = (phys.earthDiameter / 2) * scale,
-      ey = horizonY - (e0 + rise) * scale;
+      ey = horizonY - (e0 + rise) * scale, // where the orbit puts the Earth; the stars keep to it
+      groundRows = Math.round(groundSinkAsked / cell),
+      groundSunk = groundRows * cell,
+      earthY = ey + Math.round(earthSinkAsked / cell) * cell;
 
-    // stars, rising with the Earth, hidden by the Moon's limb
+    // stars, rising with the Earth, hidden by the Moon's limb and the Earth's disc
     for (const st of stars) {
       const x = ex + st.dx,
         y = ey + st.dy;
-      if (y < 0 || (p.earth && y >= horizon(x) - cell * 0.5)) continue;
+      if (y < 0) continue;
+      // culled here rather than in layoutStars, since the Earth can sink away from the stars it hid
+      const behindMoon = y >= horizon(x) + groundSunk - cell * 0.5,
+        behindEarth = Math.hypot(x - ex, y - earthY) < er + cell;
+      if (p.earth && (behindMoon || behindEarth)) continue;
       // snap to the dot grid so stars keep the halftone's rhythm
       dot((Math.floor(x / cell) + 0.5) * cell, (Math.floor(y / cell) + 0.5) * cell, st.b, st.tint);
     }
@@ -477,15 +490,15 @@ export function earthrise(canvas, params = {}) {
     ];
     const c0 = Math.floor((ex - er) / cell) - 2,
       c1 = Math.ceil((ex + er) / cell) + 2;
-    const r0 = Math.max(0, Math.floor((ey - er) / cell) - 2),
-      r1 = Math.ceil((ey + er) / cell) + 2;
+    const r0 = Math.max(0, Math.floor((earthY - er) / cell) - 2),
+      r1 = Math.min(rows - 1, Math.ceil((earthY + er) / cell) + 2);
     for (let r = r0; r <= r1; r++) {
       for (let c = c0; c <= c1; c++) {
         const x = (c + 0.5) * cell,
           y = (r + 0.5) * cell;
-        if (y >= horizon(x) - cell * 0.5) continue; // still behind the Moon
+        if (y >= horizon(x) + groundSunk - cell * 0.5) continue; // still behind the Moon
         const nx = (x - ex) / er,
-          ny = -(y - ey) / er,
+          ny = -(y - earthY) / er,
           d2 = nx * nx + ny * ny;
         if (d2 > 1) {
           // a thin rim of air on the sunward limb
@@ -518,8 +531,11 @@ export function earthrise(canvas, params = {}) {
     const CR = craterList,
       a0 = az[0],
       a1 = az[1],
-      stretch = p.craterStretch;
+      stretch = p.craterStretch,
+      shift = groundRows * cols, // the ground's sink, in cells
+      cells = cols * rows;
     for (let i = 0; i < n; i++) {
+      if (GI[i] + shift >= cells) continue; // sunk off the bottom
       const u = GU[i],
         s = GS[i] + travel;
       // maria and highlands, then the craters
@@ -562,7 +578,7 @@ export function earthrise(canvas, params = {}) {
       if (LIMB[i] && b < 0.5 * light + shine) b = 0.5 * light + shine;
       b *= GK[i];
       if (b <= 0 || (b < 0.25 && b * 4 < BAY[i])) continue;
-      next[GI[i]] = ink + levelOf(b);
+      next[GI[i] + shift] = ink + levelOf(b);
     }
     finish();
   };
@@ -593,7 +609,7 @@ export function earthrise(canvas, params = {}) {
     schedule();
   };
   const run = () => {
-    const go = started && p.playing && !document.hidden && !still.matches;
+    const go = started && p.playing && !held && !document.hidden && !still.matches;
     if (go && !raf && !timer) {
       last = performance.now();
       schedule();
@@ -654,7 +670,7 @@ export function earthrise(canvas, params = {}) {
     started = true;
     draw();
     // an animation rather than a transition, which would need a frame at opacity 0 first
-    if (!still.matches) canvas.animate({ opacity: [0, shownFade] }, 800);
+    if (p.fadeIn && !still.matches) canvas.animate({ opacity: [0, shownFade] }, 800);
     run();
   };
   let waiting = true;
@@ -673,6 +689,25 @@ export function earthrise(canvas, params = {}) {
     physics: () => {
       if (!laidOut) rebuild();
       return { ...phys, passDuration: loop * p.timeScale, passLength: loop };
+    },
+    // where in the pass the scene is and the date it shows, for the next page to take up (transition.js)
+    moment: () => ({ date: laidOut ? shownDate : (p.date ?? Date.now()), progress: loop ? t / loop : p.progress }),
+    // stop the clock for a transition, and start it again; p.playing still decides after a release
+    hold() {
+      held = true;
+      run();
+    },
+    release() {
+      held = false;
+      run();
+    },
+    // sink the Earth and the ground these many CSS px below their place (0 is in place) and redraw at once.
+    // Nearly every cell changes, so the whole canvas is cleared once rather than cell by cell
+    sink({ earth, ground }) {
+      earthSinkAsked = earth;
+      groundSinkAsked = ground;
+      full = true;
+      if (started) draw();
     },
     // change any parameters; the scene is rebuilt, keeping its place in the pass
     update(next) {

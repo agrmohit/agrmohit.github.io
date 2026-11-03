@@ -33,12 +33,24 @@ export interface SceneParams {
   earthTint?: number;
   fov?: number;
   horizon?: number;
+  earth?: boolean;
+  fadeIn?: boolean;
 }
 
 export interface Scene {
   /** Calls `listener` after each frame; returns the unsubscribe. */
   onProgress(listener: (progress: number) => void): () => void;
+  /** The date the sky was laid out for (ms since the epoch) and where in the pass it is (0 to 1). */
+  moment(): { date: number; progress: number };
+  hold(): void;
+  release(): void;
+  /** Sinks the Earth and the ground these many CSS px below their place, and redraws. */
+  sink(px: { earth: number; ground: number }): void;
+  update(next: SceneParams): void;
   destroy(): void;
 }
 
-export function earthrise(canvas: SceneCanvas, params?: SceneParams): Scene;
+export function earthrise(canvas: SceneCanvas | HTMLCanvasElement, params?: SceneParams): Scene;
+
+/** Settings from a URL's query string or hash; see scene.js. */
+export function fromURL(query: string): SceneParams;
