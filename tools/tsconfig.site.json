@@ -1,5 +1,5 @@
 {
-  // type-checks the site's copy button (plain JS with JSDoc types) against the browser's DOM; make typecheck runs it.
+  // type-checks the site's copy button and page transitions (plain JS with JSDoc types) against the browser's DOM; make typecheck runs it.
   // It lives here, not beside the scripts, because everything under assets/ goes online
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
@@ -16,5 +16,13 @@
     "noUnusedParameters": true,
     "allowUnreachableCode": false
   },
-  "files": ["../assets/js/copy.js", "../assets/js/copy-rules.js"]
+  "files": [
+    "../assets/js/copy.js",
+    "../assets/js/copy-rules.js",
+    "../assets/earthrise/arrive.js",
+    "../assets/earthrise/handoff.js",
+    "../assets/earthrise/home.js",
+    "../assets/earthrise/project.js",
+    "../assets/earthrise/transition.js"
+  ]
 }

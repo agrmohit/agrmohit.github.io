@@ -52,6 +52,8 @@
       }
     </style>
     <link rel="stylesheet" href="/assets/css/style.css" />
+    <!-- Hides the text before the first paint when the last page hands its sky over (see transition.js) -->
+    <script src="/assets/earthrise/arrive.js"></script>
 
     <!-- Umami - Privacy preserving analytics tracking script -->
     <script
@@ -72,6 +74,8 @@
     <script type="module" src="/assets/earthrise/project.js"></script>
     <!-- Fetch the sky's modules and stars together, not one import at a time -->
     <link rel="modulepreload" href="/assets/earthrise/scene.js" />
+    <link rel="modulepreload" href="/assets/earthrise/transition.js" />
+    <link rel="modulepreload" href="/assets/earthrise/handoff.js" />
     <link rel="modulepreload" href="/assets/earthrise/astronomy.js" />
     <link rel="modulepreload" href="/assets/earthrise/stars.js" />
     <link rel="modulepreload" href="/assets/earthrise/earth-texture.js" />

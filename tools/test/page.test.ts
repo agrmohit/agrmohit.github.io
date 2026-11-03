@@ -94,12 +94,19 @@ describe("projectPage", () => {
     );
   });
 
-  it("preloads every module copy.js imports, so they load beside it, not after it", async () => {
-    const source = await Bun.file(new URL("../../assets/js/copy.js", import.meta.url)).text();
-    const imports = [...source.matchAll(/^import .* from "\.\/(.+)";$/gm)].map((match) => match[1]);
+  // every module a page's entry script imports, directly or not, so they load beside it, not after it
+  const preloadRows: readonly { name: string; page: "home" | "project"; entry: string }[] = [
+    { name: "a project page, copy.js", page: "project", entry: "/assets/js/copy.js" },
+    { name: "a project page, the sky", page: "project", entry: "/assets/earthrise/project.js" },
+    { name: "the home page, the sky", page: "home", entry: "/assets/earthrise/home.js" },
+  ];
+
+  it.each(preloadRows)("preloads every module $name imports", async ({ page, entry }) => {
+    const html =
+      page === "home" ? await Bun.file(new URL("../../index.html", import.meta.url)).text() : projectPage(PAGE);
+    const imports = await importsOf(entry);
     expect(imports.length).toBeGreaterThan(0); // else the check below passes on nothing
-    const html = projectPage(PAGE);
-    for (const module of imports) expect(html).toContain(`<link rel="modulepreload" href="/assets/js/${module}" />`);
+    for (const module of imports) expect(html).toContain(`<link rel="modulepreload" href="${module}" />`);
   });
 
   it("allows its inline script by the script's own hash", () => {
@@ -111,3 +118,16 @@ describe("projectPage", () => {
     expect(html).toContain(`script-src 'self' 'sha256-${hash}'`);
   });
 });
+
+/** The site paths of every module `entry` imports, directly or not, from its relative imports. */
+async function importsOf(entry: string, seen = new Set<string>()): Promise<string[]> {
+  const source = await Bun.file(new URL(`../..${entry}`, import.meta.url)).text();
+  // [\s\S]*? as well: the formatter wraps a long import over several lines
+  for (const match of source.matchAll(/^import [\s\S]*? from "(\.\/[^"]+)";$/gm)) {
+    const module = new URL(match[1] ?? "", `https://agrmohit.com${entry}`).pathname;
+    if (seen.has(module)) continue;
+    seen.add(module);
+    await importsOf(module, seen);
+  }
+  return [...seen];
+}
