@@ -138,8 +138,8 @@ describe("projectPage", () => {
 /** The site paths of every module `entry` imports, directly or not, from its relative imports. */
 async function importsOf(entry: string, seen = new Set<string>()): Promise<string[]> {
   const source = await Bun.file(new URL(`../..${entry}`, import.meta.url)).text();
-  // [\s\S]*? as well: the formatter wraps a long import over several lines
-  for (const match of source.matchAll(/^import [\s\S]*? from "(\.\/[^"]+)";$/gm)) {
+  // [\s\S]*? as well: the formatter wraps a long import over several lines. ../ too: prefetch.js imports one
+  for (const match of source.matchAll(/^import [\s\S]*? from "(\.\.?\/[^"]+)";$/gm)) {
     const module = new URL(match[1] ?? "", `https://agrmohit.com${entry}`).pathname;
     if (seen.has(module)) continue;
     seen.add(module);
