@@ -89,7 +89,9 @@ describe("projectPage", () => {
   it("puts the nav in a <header>, as the home page does", async () => {
     const home = await Bun.file(new URL("../../index.html", import.meta.url)).text();
     expect(home).toMatch(/<header>\s*<nav>/);
-    expect(projectPage(PAGE)).toMatch(/<body class="project-page">\s*<header>\s*<nav>[\s\S]*?<\/nav>\s*<\/header>/);
+    expect(projectPage(PAGE)).toMatch(
+      /<body class="project-page">\s*<canvas id="earthrise"[^>]*><\/canvas>\s*<header>\s*<nav>[\s\S]*?<\/nav>\s*<\/header>/,
+    );
   });
 
   it("preloads every module copy.js imports, so they load beside it, not after it", async () => {

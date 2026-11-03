@@ -39,6 +39,7 @@ export const DEFAULTS = {
   fps: 10,
   playing: true,
   progress: 0.35, // where in the pass to start, 0 to 1
+  earth: true, // false draws only the stars, over the whole canvas: the sky behind the project pages
 };
 
 // Settings from a URL's query string or hash, such as "date=1883984400000&earthTint=0.7": "1" or "0" for
@@ -280,7 +281,6 @@ export function earthrise(canvas, params = {}) {
       sd = Math.sin(phys.dip);
     const sunZen = sun[1] * cd + sun[2] * sd,
       sunFwd = sun[1] * sd - sun[2] * cd;
-    const real = p.realLight;
     const azl = Math.hypot(sun[0], sunFwd) || 1;
     // the shadows always fall away from the real Sun; only its elevation is ours to fix
     az = Math.hypot(sun[0], sunFwd) > 1e-3 ? [sun[0] / azl, sunFwd / azl] : [1, 0];
@@ -317,6 +317,13 @@ export function earthrise(canvas, params = {}) {
     e0 = -phys.earthDiameter * 0.55;
     loop = Math.max(FADE * 3, ((horizonY / scale) * 0.55 - e0) / (phys.rate * p.timeScale)); // s on screen
 
+    if (p.earth) layoutGround(sunZen, sunFwd);
+    layoutStars();
+  };
+
+  // sunZen, sunFwd: the Sun's direction toward the zenith and along the track, from layout()
+  const layoutGround = (sunZen, sunFwd) => {
+    const real = p.realLight;
     // where each ground cell looks: a ray down onto the sphere
     const rc = R_MOON + p.altitude;
     const gi = [],
@@ -385,8 +392,6 @@ export function earthrise(canvas, params = {}) {
     buildCraters(u0, u1, s0 / p.craterStretch, s1 / p.craterStretch);
     albedoLarge = lattice(70, 3, 20, u0, u1, s0, s1);
     albedoSmall = lattice(4, 2, 0, u0, u1, s0, s1);
-
-    layoutStars();
   };
 
   // the real sky round the Earth, projected onto the screen (gnomonic) about
@@ -429,7 +434,7 @@ export function earthrise(canvas, params = {}) {
         const dx = ((sx * right[0] + sy * right[1] + sz * right[2]) / z) * scale,
           dy = -((sx * up[0] + sy * up[1] + sz * up[2]) / z) * scale;
         if (Math.abs(dx) > W / 2 + cell || Math.abs(dy) > 2 * H) continue;
-        if (Math.hypot(dx, dy) < er + cell) continue; // always behind the Earth's disc
+        if (p.earth && Math.hypot(dx, dy) < er + cell) continue; // always behind the Earth's disc
         // magnitudes are already a perceptual scale: brightness linear in them,
         // from the faintest shown to Sirius at -1.5
         const b = 0.25 + 0.75 * clamp((p.limitingMag - mag[i]) / (p.limitingMag + 1.5));
@@ -453,10 +458,11 @@ export function earthrise(canvas, params = {}) {
     for (const st of stars) {
       const x = ex + st.dx,
         y = ey + st.dy;
-      if (y < 0 || y >= horizon(x) - cell * 0.5) continue;
+      if (y < 0 || (p.earth && y >= horizon(x) - cell * 0.5)) continue;
       // snap to the dot grid so stars keep the halftone's rhythm
       dot((Math.floor(x / cell) + 0.5) * cell, (Math.floor(y / cell) + 0.5) * cell, st.b, st.tint);
     }
+    if (!p.earth) return finish();
 
     // the Earth, turning at its real rate as seen from the Moon
     // the surface turns east, from pa toward pb, so a fixed spot's longitude grows
@@ -558,7 +564,9 @@ export function earthrise(canvas, params = {}) {
       if (b <= 0 || (b < 0.25 && b * 4 < BAY[i])) continue;
       next[GI[i]] = ink + levelOf(b);
     }
-
+    finish();
+  };
+  const finish = () => {
     paint();
     for (const f of listeners) f(t / loop);
   };
