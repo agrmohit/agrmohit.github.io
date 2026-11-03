@@ -1,12 +1,44 @@
 {
-  "extends": ["development"],
+  "extends": [
+    "development"
+  ],
+  // the golden test output, not site pages
+  "ignoredUrls": [
+    {
+      "domain": "tools/test/fixture/",
+      "hints": ["*"]
+    }
+  ],
   "hints": {
     "manifest-is-valid": "off",
+    // animating opacity is the cheap kind
+    "detect-css-reflows/composite": "off",
+    // only pele's diagrams use inline styles
+    "no-inline-styles": "off",
+    // its schema predates "module": "Preserve" (TypeScript 5.4); tsc checks the config
+    "typescript-config/is-valid": "off",
+    "axe/aria": [
+      "default",
+      {
+        // false positive on pele's role="graphics-document"
+        "aria-roledescription": "off"
+      }
+    ],
     "axe/structure": [
       "default",
       {
         "list": "off"
       }
-    ]
+    ],
+    "compat-api/html": [
+      "default",
+      {
+        "ignore": [
+          "link[fetchpriority]",
+          "meta[name=theme-color]"
+        ]
+      }
+    ],
+    "apple-touch-icons": "off"
   }
 }
