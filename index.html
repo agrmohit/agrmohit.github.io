@@ -9,7 +9,7 @@
     <link rel="dns-prefetch" href="https://analytics.agrmohit.com/" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'sha256-32cdnvTwwxBLV2FHnwduHWY+Bt1RUEXGThLnyMAuYxA='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-src 'self'; connect-src 'self' https://analytics.agrmohit.com; object-src 'none'; upgrade-insecure-requests;"
+      content="default-src 'self'; script-src 'self' 'inline-speculation-rules'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-src 'self'; connect-src 'self' https://analytics.agrmohit.com; object-src 'none'; upgrade-insecure-requests;"
     />
 
     <!-- Metadata start -->
@@ -80,7 +80,12 @@
     <link rel="modulepreload" href="/assets/earthrise/astronomy.js" />
     <link rel="modulepreload" href="/assets/earthrise/stars.js" />
     <link rel="modulepreload" href="/assets/earthrise/earth-texture.js" />
+    <!-- Not run here: a project page's text waits for its sky, and this is the one sky module home lacks -->
+    <link rel="modulepreload" href="/assets/earthrise/project.js" />
     <link rel="preload" href="/assets/earthrise/data/stars-ecliptic.bin" as="fetch" crossorigin fetchpriority="low" />
+    <!-- Fetches a project page on hover; handoff.js, its other import, is preloaded above -->
+    <link rel="modulepreload" href="/assets/js/prefetch-rules.js" />
+    <script type="module" src="/assets/js/prefetch.js"></script>
 
     <!-- Umami - Privacy preserving analytics tracking script -->
     <script
@@ -94,9 +99,7 @@
       data-max-duration="300000"
     ></script>
     <!-- Opt-out of tracking on non-canonical urls -->
-    <script>
-      if (window.location.hostname !== "agrmohit.com") localStorage.setItem("umami.disabled", "1");
-    </script>
+    <script src="/assets/js/umami-opt-out.js"></script>
 
     <!-- Structured Data (schema.org) -->
     <script type="application/ld+json">
