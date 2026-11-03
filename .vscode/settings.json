@@ -1,5 +1,6 @@
 {
-  // Biome runs from tools/node_modules; biome.json at the repo root covers tools/ and the site's copy scripts
+  // Biome runs from tools/node_modules, the version CI pins; biome.json at the repo root covers tools/ and the site's own scripts
+  "biome.lsp.bin": "tools/node_modules/.bin/biome",
   "[typescript][javascript][json][jsonc]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true,
