@@ -1,5 +1,5 @@
 {
-  // type-checks the site's copy button and page transitions (plain JS with JSDoc types) against the browser's DOM; make typecheck runs it.
+  // type-checks the site's copy button, prefetch and page transitions (plain JS with JSDoc types) against the browser's DOM; make typecheck runs it.
   // It lives here, not beside the scripts, because everything under assets/ goes online
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
@@ -19,6 +19,9 @@
   "files": [
     "../assets/js/copy.js",
     "../assets/js/copy-rules.js",
+    "../assets/js/prefetch.js",
+    "../assets/js/prefetch-rules.js",
+    "../assets/js/umami-opt-out.js",
     "../assets/earthrise/arrive.js",
     "../assets/earthrise/handoff.js",
     "../assets/earthrise/home.js",

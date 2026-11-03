@@ -99,6 +99,7 @@ describe("projectPage", () => {
     { name: "a project page, copy.js", page: "project", entry: "/assets/js/copy.js" },
     { name: "a project page, the sky", page: "project", entry: "/assets/earthrise/project.js" },
     { name: "the home page, the sky", page: "home", entry: "/assets/earthrise/home.js" },
+    { name: "the home page, prefetch.js", page: "home", entry: "/assets/js/prefetch.js" },
   ];
 
   it.each(preloadRows)("preloads every module $name imports", async ({ page, entry }) => {
@@ -107,6 +108,21 @@ describe("projectPage", () => {
     const imports = await importsOf(entry);
     expect(imports.length).toBeGreaterThan(0); // else the check below passes on nothing
     for (const module of imports) expect(html).toContain(`<link rel="modulepreload" href="${module}" />`);
+  });
+
+  // a prefetch brings only the HTML, and a project page's text waits for its sky
+  it("lets the home page cache the project pages' whole sky", async () => {
+    const home = await Bun.file(new URL("../../index.html", import.meta.url)).text();
+    const sky = ["/assets/earthrise/project.js", ...(await importsOf("/assets/earthrise/project.js"))];
+    for (const module of sky) expect(home).toContain(`<link rel="modulepreload" href="${module}" />`);
+  });
+
+  // Chromium ignores the keyword once script-src holds any hash, so prefetch would silently stop
+  it("lets the home page insert speculation rules", async () => {
+    const home = await Bun.file(new URL("../../index.html", import.meta.url)).text();
+    const scriptSrc = home.match(/script-src [^;]*/)?.[0] ?? "";
+    expect(scriptSrc).toContain("'inline-speculation-rules'");
+    expect(scriptSrc).not.toContain("'sha256-");
   });
 
   it("allows its inline script by the script's own hash", () => {
