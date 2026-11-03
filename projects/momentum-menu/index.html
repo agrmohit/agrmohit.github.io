@@ -75,9 +75,17 @@
     <!-- A copy button on long code blocks; the preload fetches its import beside it, not after it -->
     <link rel="modulepreload" href="/assets/js/copy-rules.js" />
     <script type="module" src="/assets/js/copy.js"></script>
+    <script type="module" src="/assets/earthrise/project.js"></script>
+    <!-- Fetch the sky's modules and stars together, not one import at a time -->
+    <link rel="modulepreload" href="/assets/earthrise/scene.js" />
+    <link rel="modulepreload" href="/assets/earthrise/astronomy.js" />
+    <link rel="modulepreload" href="/assets/earthrise/stars.js" />
+    <link rel="modulepreload" href="/assets/earthrise/earth-texture.js" />
+    <link rel="preload" href="/assets/earthrise/data/stars-ecliptic.bin" as="fetch" crossorigin fetchpriority="low" />
   </head>
 
   <body class="project-page">
+    <canvas id="earthrise" aria-hidden="true"></canvas>
     <header>
     <nav>
       <span><a href="/" data-umami-event="home" data-umami-event-source="project-page-momentum-menu">Home</a></span>
