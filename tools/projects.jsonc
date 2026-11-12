@@ -24,7 +24,7 @@
     },
     {
       "repo": "agrmohit/momentum-menu",
-      "tag": "v2.1.2",
+      "tag": "v2.3.0",
       "title": "momentum menu",
       "blurb": "a macos menu bar app for the <span class=\"explanation\" title=\"wireless noise-cancelling headphones\">sennheiser momentum 4</span>: battery, noise control, equaliser and paired devices, without the phone app",
       "license": "MIT",
